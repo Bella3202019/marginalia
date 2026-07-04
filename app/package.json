@@ -9,6 +9,6 @@
     "mock": "MARGINALIA_MOCK=1 node server.js"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.110.0"
+    "openai": "^6.45.0"
   }
 }

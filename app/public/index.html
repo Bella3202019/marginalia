@@ -45,17 +45,11 @@
   .top .spacer { flex: 1; }
   .icon-btn { background: none; border: 1px solid var(--line); border-radius: 8px; color: var(--ink-soft); font-family: var(--sans); font-size: 12px; padding: 6px 10px; }
 
-  /* capture */
   .capture-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; gap: 8px; }
   .capture-body .big-seal { width: 72px; height: 72px; font-size: 26px; border-radius: 12px; margin-bottom: 10px; }
   .capture-body h1 { font-size: 24px; font-weight: 600; margin: 0; }
   .capture-body p { font-family: var(--sans); font-size: 14px; color: var(--ink-soft); max-width: 34ch; margin: 0 0 18px; }
-  .shutter-label {
-    display: inline-flex; align-items: center; gap: 10px;
-    background: var(--cinnabar); color: #FBF7EE;
-    font-family: var(--sans); font-size: 15px; font-weight: 600;
-    border: none; border-radius: 999px; padding: 14px 26px;
-  }
+  .shutter-label { display: inline-flex; align-items: center; gap: 10px; background: var(--cinnabar); color: #FBF7EE; font-family: var(--sans); font-size: 15px; font-weight: 600; border: none; border-radius: 999px; padding: 14px 26px; }
   .shutter-label:active { transform: scale(.97); }
   #file-input { display: none; }
   .scanning-note { font-family: var(--sans); font-size: 13px; color: var(--cinnabar-text); margin-top: 16px; min-height: 20px; }
@@ -63,7 +57,6 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   @media (prefers-reduced-motion: reduce) { .spin { animation: none; } }
 
-  /* read */
   .passage { padding: 4px 20px 24px; }
   .read-hint { font-family: var(--sans); font-size: 11.5px; color: var(--cinnabar-text); background: var(--wash); border-radius: 8px; padding: 7px 11px; margin: 0 0 14px; }
   .para { position: relative; margin: 0 0 18px; padding-right: 26px; font-size: 17px; line-height: 1.85; }
@@ -78,7 +71,6 @@
   .guide-card ol { margin: 0 0 10px; padding-left: 18px; font-size: 13px; line-height: 1.55; }
   .guide-card .q { font-family: var(--serif); font-style: italic; font-size: 14px; margin: 0; }
 
-  /* collections */
   .coll-body { padding: 4px 20px 24px; font-family: var(--sans); }
   .empty { text-align: center; color: var(--ink-soft); font-size: 13.5px; line-height: 1.6; padding: 56px 24px; }
   .empty .big { font-family: var(--serif); font-size: 34px; display: block; margin-bottom: 10px; color: var(--cinnabar-text); }
@@ -93,13 +85,11 @@
   .moment-card .m-src b { color: var(--ink); font-weight: 600; }
   .moment-card .m-src .when { margin-left: auto; font-style: italic; }
 
-  /* nav */
   .nav { flex: none; display: flex; border-top: 1px solid var(--line); background: var(--surface); font-family: var(--sans); padding-bottom: max(6px, env(safe-area-inset-bottom)); }
   .nav button { flex: 1; background: none; border: none; padding: 10px 0 8px; font-size: 10.5px; letter-spacing: .4px; color: var(--ink-soft); display: grid; justify-items: center; gap: 2px; }
   .nav button .glyph { font-family: var(--serif); font-size: 18px; line-height: 1; }
   .nav button.on { color: var(--cinnabar-text); }
 
-  /* sheet */
   .backdrop { position: fixed; inset: 0; background: rgba(20,22,28,.4); z-index: 5; }
   .backdrop[hidden] { display: none; }
   .sheet { position: fixed; left: 0; right: 0; bottom: 0; max-height: 80%; background: var(--surface); border-radius: 22px 22px 0 0; z-index: 6; display: flex; flex-direction: column; box-shadow: 0 -12px 40px rgba(20,22,28,.25); }
@@ -138,7 +128,6 @@
 </head>
 <body>
 
-  <!-- CAPTURE -->
   <section class="screen on" id="scr-capture">
     <div class="capture-body">
       <div class="seal big-seal" aria-hidden="true">批注</div>
@@ -150,7 +139,6 @@
     </div>
   </section>
 
-  <!-- READ -->
   <section class="screen" id="scr-read">
     <div class="top">
       <div class="t" id="book-line">Reading<small id="chapter-line"></small></div>
@@ -161,13 +149,11 @@
     <div class="passage" id="passage"></div>
   </section>
 
-  <!-- MOMENTS -->
   <section class="screen" id="scr-moments">
     <div class="top"><div class="t">Moments<small>the sentences that made your days · 悟</small></div></div>
     <div class="coll-body" id="moments-body"></div>
   </section>
 
-  <!-- WORDS -->
   <section class="screen" id="scr-words">
     <div class="top"><div class="t">My Words<small>collected while you read · 词</small></div></div>
     <div class="coll-body" id="words-body"></div>
@@ -192,9 +178,9 @@
 
   var $ = function (id) { return document.getElementById(id); };
   var state = {
-    page: load('marginalia.page') || null,      // { book_title, author, chapter, paragraphs, tricky_words, guide }
-    words: load('marginalia.words') || [],       // [{key, zh, src, when}]
-    moments: load('marginalia.moments') || [],   // [{quote, book, ch, when}]
+    page: load('marginalia.page') || null,
+    words: load('marginalia.words') || [],
+    moments: load('marginalia.moments') || [],
   };
 
   function load(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }
@@ -237,8 +223,6 @@
     return data;
   }
 
-  /* ---------- capture ---------- */
-
   $('file-input').addEventListener('change', async function () {
     var file = this.files && this.files[0];
     this.value = '';
@@ -246,7 +230,7 @@
     var note = $('scan-note');
     note.innerHTML = '<span class="spin"></span>Reading your page…';
     try {
-      var b64 = await downscale(file, 2000, 0.85);
+      var b64 = await downscale(file, 1600, 0.8);
       var page = await api('/api/read-page', { image_base64: b64, media_type: 'image/jpeg' });
       if (!page.recognized || !page.paragraphs || page.paragraphs.length === 0) {
         note.textContent = "Couldn't read that photo — try again, closer and with more light.";
@@ -280,8 +264,6 @@
       img.src = url;
     });
   }
-
-  /* ---------- read ---------- */
 
   function bookLabel() {
     var p = state.page || {};
@@ -343,8 +325,6 @@
     });
   }
 
-  /* ---------- word sheet ---------- */
-
   async function openWord(display, sentence, btn) {
     if (btn) btn.classList.add('active');
     openSheet('<div class="sheet-loading"><span class="spin"></span>Looking at “' + esc(display) + '” in this sentence…</div>');
@@ -375,8 +355,6 @@
     }
   }
 
-  /* ---------- unpack sheet ---------- */
-
   async function openUnpack(paragraph) {
     openSheet('<div class="sheet-loading"><span class="spin"></span>Unpacking this paragraph…</div>');
     try {
@@ -396,8 +374,6 @@
       openSheet('<div class="sheet-loading">Couldn’t reach the reading companion: ' + esc(err.message) + '</div>');
     }
   }
-
-  /* ---------- moments ---------- */
 
   function today() {
     return new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
@@ -444,8 +420,6 @@
     });
     body.innerHTML = html;
   }
-
-  /* ---------- wiring ---------- */
 
   $('resnap').addEventListener('click', function () { show('scr-capture'); });
   $('nav-read').addEventListener('click', function () { show(state.page ? 'scr-read' : 'scr-capture'); });
