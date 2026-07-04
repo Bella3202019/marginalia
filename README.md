@@ -9,3 +9,6 @@ story underneath it.
 - **Interactive prototype:** [`prototype/marginalia.html`](prototype/marginalia.html) —
   open in a browser (best on a phone). The demo simulates the full loop —
   snap → tap → unpack → collect — on a passage of Mill's *On Liberty*.
+- **v1 app (works on any book):** [`app/`](app/README.md) — camera → Claude
+  reads the page → live word senses, paragraph unpacking, Moments. Runs with
+  `npm start` + an Anthropic API key, or `npm run mock` for a keyless demo.

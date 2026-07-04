@@ -1,0 +1,14 @@
+{
+  "name": "marginalia",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Marginalia · 批注 — a reading companion for physical books",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "mock": "MARGINALIA_MOCK=1 node server.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.110.0"
+  }
+}

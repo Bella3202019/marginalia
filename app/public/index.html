@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F3F0E7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#14161C" media="(prefers-color-scheme: dark)">
+<title>Marginalia · 批注</title>
+<style>
+  :root {
+    --bg: #F3F0E7; --surface: #FBF9F2; --sunken: #ECE8DB;
+    --ink: #232833; --ink-soft: #5C6472; --line: #D8D2C2;
+    --cinnabar: #BF3B2B; --cinnabar-text: #A93325;
+    --wash: rgba(191,59,43,.09); --wash-strong: rgba(191,59,43,.16);
+    --serif: 'Iowan Old Style','Palatino Linotype','Book Antiqua',Palatino,Georgia,'Songti SC','Noto Serif CJK SC',serif;
+    --sans: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue','PingFang SC','Noto Sans CJK SC',Arial,sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14161C; --surface: #1D202A; --sunken: #171A22;
+      --ink: #E6E1D3; --ink-soft: #9BA1AE; --line: #31353F;
+      --cinnabar: #E8654E; --cinnabar-text: #EC7259;
+      --wash: rgba(232,101,78,.13); --wash-strong: rgba(232,101,78,.22);
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: var(--serif); font-size: 17px; line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    display: flex; flex-direction: column;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left);
+  }
+  button { font-family: inherit; cursor: pointer; }
+  button:focus-visible { outline: 2px solid var(--cinnabar); outline-offset: 2px; }
+
+  .screen { flex: 1; overflow-y: auto; display: none; flex-direction: column; min-height: 0; }
+  .screen.on { display: flex; }
+
+  .top { flex: none; display: flex; align-items: center; gap: 10px; padding: 16px 18px 8px; font-family: var(--sans); }
+  .seal { width: 30px; height: 30px; background: var(--cinnabar); color: #FBF7EE; border-radius: 5px; display: grid; place-items: center; font-family: var(--serif); font-size: 10px; letter-spacing: 0; flex: none; user-select: none; }
+  .top .t { font-size: 14px; font-weight: 600; min-width: 0; }
+  .top .t small { display: block; font-weight: 400; font-size: 11.5px; color: var(--ink-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .top .spacer { flex: 1; }
+  .icon-btn { background: none; border: 1px solid var(--line); border-radius: 8px; color: var(--ink-soft); font-family: var(--sans); font-size: 12px; padding: 6px 10px; }
+
+  /* capture */
+  .capture-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; gap: 8px; }
+  .capture-body .big-seal { width: 72px; height: 72px; font-size: 26px; border-radius: 12px; margin-bottom: 10px; }
+  .capture-body h1 { font-size: 24px; font-weight: 600; margin: 0; }
+  .capture-body p { font-family: var(--sans); font-size: 14px; color: var(--ink-soft); max-width: 34ch; margin: 0 0 18px; }
+  .shutter-label {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: var(--cinnabar); color: #FBF7EE;
+    font-family: var(--sans); font-size: 15px; font-weight: 600;
+    border: none; border-radius: 999px; padding: 14px 26px;
+  }
+  .shutter-label:active { transform: scale(.97); }
+  #file-input { display: none; }
+  .scanning-note { font-family: var(--sans); font-size: 13px; color: var(--cinnabar-text); margin-top: 16px; min-height: 20px; }
+  .spin { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--wash-strong); border-top-color: var(--cinnabar); border-radius: 50%; vertical-align: -2px; margin-right: 6px; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .spin { animation: none; } }
+
+  /* read */
+  .passage { padding: 4px 20px 24px; }
+  .read-hint { font-family: var(--sans); font-size: 11.5px; color: var(--cinnabar-text); background: var(--wash); border-radius: 8px; padding: 7px 11px; margin: 0 0 14px; }
+  .para { position: relative; margin: 0 0 18px; padding-right: 26px; font-size: 17px; line-height: 1.85; }
+  .pmark { position: absolute; right: -4px; top: 4px; background: none; border: none; color: var(--cinnabar); font-family: var(--serif); font-size: 18px; line-height: 1; padding: 4px 6px; opacity: .85; border-radius: 6px; }
+  .pmark:active { background: var(--wash); }
+  .w { background: none; border: none; padding: 0; margin: 0; font: inherit; color: inherit; border-radius: 3px; }
+  .w.tricky { text-decoration: underline dotted var(--cinnabar); text-decoration-thickness: 1.5px; text-underline-offset: 4px; }
+  .w.active { background: var(--wash-strong); }
+  .smark { background: none; border: none; padding: 0 3px; margin-left: 1px; font: inherit; font-size: 12px; line-height: 1; color: var(--cinnabar); opacity: .45; position: relative; top: -.45em; border-radius: 4px; }
+  .guide-card { margin: 6px 20px 16px; background: var(--sunken); border-radius: 12px; padding: 14px 16px; font-family: var(--sans); }
+  .guide-card h3 { margin: 0 0 8px; font-size: 11px; letter-spacing: 1.4px; text-transform: uppercase; color: var(--cinnabar-text); }
+  .guide-card ol { margin: 0 0 10px; padding-left: 18px; font-size: 13px; line-height: 1.55; }
+  .guide-card .q { font-family: var(--serif); font-style: italic; font-size: 14px; margin: 0; }
+
+  /* collections */
+  .coll-body { padding: 4px 20px 24px; font-family: var(--sans); }
+  .empty { text-align: center; color: var(--ink-soft); font-size: 13.5px; line-height: 1.6; padding: 56px 24px; }
+  .empty .big { font-family: var(--serif); font-size: 34px; display: block; margin-bottom: 10px; color: var(--cinnabar-text); }
+  .word-row { display: flex; align-items: baseline; gap: 10px; padding: 12px 2px; border-bottom: 1px solid var(--line); font-size: 14px; }
+  .word-row .hw { font-family: var(--serif); font-size: 17px; font-weight: 600; }
+  .word-row .zh { color: var(--ink-soft); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .word-row .src { margin-left: auto; font-size: 11px; color: var(--ink-soft); font-style: italic; flex: none; }
+  .moment-card { position: relative; background: var(--sunken); border-radius: 14px; padding: 24px 20px 14px; margin-bottom: 14px; }
+  .moment-card::before { content: "\201C"; position: absolute; top: 4px; left: 12px; font-size: 44px; line-height: 1; color: var(--cinnabar); opacity: .85; font-family: var(--serif); }
+  .moment-card blockquote { margin: 0 0 12px; font-family: var(--serif); font-style: italic; font-size: 16.5px; line-height: 1.7; text-indent: 18px; }
+  .moment-card .m-src { display: flex; align-items: baseline; gap: 8px; border-top: 1px solid var(--line); padding-top: 9px; font-size: 11px; color: var(--ink-soft); }
+  .moment-card .m-src b { color: var(--ink); font-weight: 600; }
+  .moment-card .m-src .when { margin-left: auto; font-style: italic; }
+
+  /* nav */
+  .nav { flex: none; display: flex; border-top: 1px solid var(--line); background: var(--surface); font-family: var(--sans); padding-bottom: max(6px, env(safe-area-inset-bottom)); }
+  .nav button { flex: 1; background: none; border: none; padding: 10px 0 8px; font-size: 10.5px; letter-spacing: .4px; color: var(--ink-soft); display: grid; justify-items: center; gap: 2px; }
+  .nav button .glyph { font-family: var(--serif); font-size: 18px; line-height: 1; }
+  .nav button.on { color: var(--cinnabar-text); }
+
+  /* sheet */
+  .backdrop { position: fixed; inset: 0; background: rgba(20,22,28,.4); z-index: 5; }
+  .backdrop[hidden] { display: none; }
+  .sheet { position: fixed; left: 0; right: 0; bottom: 0; max-height: 80%; background: var(--surface); border-radius: 22px 22px 0 0; z-index: 6; display: flex; flex-direction: column; box-shadow: 0 -12px 40px rgba(20,22,28,.25); }
+  .sheet[hidden] { display: none; }
+  .sheet-grip { flex: none; width: 40px; height: 4px; border-radius: 2px; background: var(--line); margin: 10px auto 0; }
+  .sheet-scroll { overflow-y: auto; padding: 12px 20px calc(22px + env(safe-area-inset-bottom)); }
+  @media (prefers-reduced-motion: no-preference) {
+    .sheet { animation: rise .24s ease-out; }
+    @keyframes rise { from { transform: translateY(30px); opacity: .4; } to { transform: none; opacity: 1; } }
+  }
+  .hw-line { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .hw-line .hw { font-size: 26px; font-weight: 600; }
+  .hw-line .ipa { font-family: var(--sans); font-size: 13px; color: var(--ink-soft); }
+  .hw-line .pos { font-family: var(--sans); font-size: 10.5px; letter-spacing: 1px; text-transform: uppercase; color: var(--cinnabar-text); background: var(--wash); border-radius: 4px; padding: 2px 7px; }
+  .sense { margin: 12px 0 0; font-size: 15.5px; line-height: 1.65; }
+  .sense .zh { display: block; font-size: 16px; margin-top: 6px; }
+  .trap { margin: 14px 0 0; font-family: var(--sans); font-size: 13px; line-height: 1.55; background: var(--wash); border-left: 3px solid var(--cinnabar); border-radius: 0 10px 10px 0; padding: 9px 12px; }
+  .trap b { color: var(--cinnabar-text); }
+  .in-sentence { margin: 14px 0 0; font-style: italic; font-size: 14px; color: var(--ink-soft); border-left: 2px solid var(--line); padding-left: 12px; line-height: 1.6; }
+  .in-sentence mark { background: var(--wash-strong); color: inherit; border-radius: 2px; padding: 0 2px; }
+  .save-btn { margin-top: 18px; width: 100%; border: 1.5px solid var(--cinnabar); background: none; color: var(--cinnabar-text); font-family: var(--sans); font-size: 13.5px; font-weight: 600; border-radius: 10px; padding: 11px; }
+  .save-btn.saved { background: var(--cinnabar); color: #FBF7EE; }
+  .unpack-h { font-family: var(--sans); font-size: 10.5px; letter-spacing: 1.4px; text-transform: uppercase; color: var(--cinnabar-text); margin: 18px 0 6px; }
+  .unpack-h:first-of-type { margin-top: 10px; }
+  .unpack-p { margin: 0; font-size: 15px; line-height: 1.7; }
+  .think-list { margin: 0; padding-left: 18px; font-size: 14.5px; line-height: 1.65; }
+  .think-list li { margin-bottom: 8px; }
+  .sheet-title { font-family: var(--sans); font-size: 12px; color: var(--ink-soft); margin: 2px 0 0; }
+  .sheet-loading { text-align: center; font-family: var(--sans); font-size: 13px; color: var(--ink-soft); padding: 28px 0; }
+  .moment-preview { margin: 14px 0 0; background: var(--sunken); border-radius: 12px; padding: 16px 16px 12px; font-style: italic; font-size: 15.5px; line-height: 1.7; }
+  .moment-preview .q-src { display: block; font-family: var(--sans); font-style: normal; font-size: 11px; color: var(--ink-soft); margin-top: 10px; }
+
+  .toast { position: fixed; left: 50%; bottom: 84px; transform: translateX(-50%); background: var(--ink); color: var(--bg); font-family: var(--sans); font-size: 12.5px; border-radius: 999px; padding: 9px 16px; max-width: 88%; z-index: 8; opacity: 0; pointer-events: none; transition: opacity .25s; text-align: center; }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+  <!-- CAPTURE -->
+  <section class="screen on" id="scr-capture">
+    <div class="capture-body">
+      <div class="seal big-seal" aria-hidden="true">批注</div>
+      <h1>Marginalia</h1>
+      <p>Point your camera at the page you're reading. Tap what confuses you. Keep what lights you up.</p>
+      <label class="shutter-label" for="file-input">📖 Snap the page</label>
+      <input id="file-input" type="file" accept="image/*" capture="environment">
+      <div class="scanning-note" id="scan-note"></div>
+    </div>
+  </section>
+
+  <!-- READ -->
+  <section class="screen" id="scr-read">
+    <div class="top">
+      <div class="t" id="book-line">Reading<small id="chapter-line"></small></div>
+      <div class="spacer"></div>
+      <button class="icon-btn" id="resnap">↺ re-snap</button>
+    </div>
+    <div id="guide-slot"></div>
+    <div class="passage" id="passage"></div>
+  </section>
+
+  <!-- MOMENTS -->
+  <section class="screen" id="scr-moments">
+    <div class="top"><div class="t">Moments<small>the sentences that made your days · 悟</small></div></div>
+    <div class="coll-body" id="moments-body"></div>
+  </section>
+
+  <!-- WORDS -->
+  <section class="screen" id="scr-words">
+    <div class="top"><div class="t">My Words<small>collected while you read · 词</small></div></div>
+    <div class="coll-body" id="words-body"></div>
+  </section>
+
+  <nav class="nav" aria-label="Sections">
+    <button id="nav-read" class="on"><span class="glyph">¶</span>Read</button>
+    <button id="nav-moments"><span class="glyph">悟</span>Moments</button>
+    <button id="nav-words"><span class="glyph">词</span>Words</button>
+  </nav>
+
+  <div class="backdrop" id="backdrop" hidden></div>
+  <div class="sheet" id="sheet" hidden role="dialog" aria-modal="true">
+    <div class="sheet-grip"></div>
+    <div class="sheet-scroll" id="sheet-scroll"></div>
+  </div>
+  <div class="toast" id="toast" role="status"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  var $ = function (id) { return document.getElementById(id); };
+  var state = {
+    page: load('marginalia.page') || null,      // { book_title, author, chapter, paragraphs, tricky_words, guide }
+    words: load('marginalia.words') || [],       // [{key, zh, src, when}]
+    moments: load('marginalia.moments') || [],   // [{quote, book, ch, when}]
+  };
+
+  function load(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }
+  function save(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+
+  var toastTimer = null;
+  function toast(msg, ms) {
+    var t = $('toast'); t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove('show'); }, ms || 2400);
+  }
+
+  var SCREENS = ['scr-capture', 'scr-read', 'scr-moments', 'scr-words'];
+  function show(id) {
+    SCREENS.forEach(function (s) { $(s).classList.toggle('on', s === id); });
+    $('nav-read').classList.toggle('on', id === 'scr-capture' || id === 'scr-read');
+    $('nav-moments').classList.toggle('on', id === 'scr-moments');
+    $('nav-words').classList.toggle('on', id === 'scr-words');
+    closeSheet();
+  }
+
+  function openSheet(html) {
+    $('sheet-scroll').innerHTML = html;
+    $('sheet').hidden = false; $('backdrop').hidden = false;
+    $('sheet-scroll').scrollTop = 0;
+  }
+  function closeSheet() {
+    $('sheet').hidden = true; $('backdrop').hidden = true;
+    var a = document.querySelector('.w.active'); if (a) a.classList.remove('active');
+  }
+  $('backdrop').addEventListener('click', closeSheet);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeSheet(); });
+
+  function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  async function api(path, body) {
+    var res = await fetch(path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+    var data = await res.json().catch(function () { return { error: 'bad response' }; });
+    if (!res.ok || data.error) throw new Error(data.error || ('HTTP ' + res.status));
+    return data;
+  }
+
+  /* ---------- capture ---------- */
+
+  $('file-input').addEventListener('change', async function () {
+    var file = this.files && this.files[0];
+    this.value = '';
+    if (!file) return;
+    var note = $('scan-note');
+    note.innerHTML = '<span class="spin"></span>Reading your page…';
+    try {
+      var b64 = await downscale(file, 2000, 0.85);
+      var page = await api('/api/read-page', { image_base64: b64, media_type: 'image/jpeg' });
+      if (!page.recognized || !page.paragraphs || page.paragraphs.length === 0) {
+        note.textContent = "Couldn't read that photo — try again, closer and with more light.";
+        return;
+      }
+      note.textContent = '';
+      state.page = page;
+      save('marginalia.page', page);
+      renderPage();
+      show('scr-read');
+      toast(page.book_title ? ('✓ Recognized: ' + page.book_title + (page.chapter ? ', ' + page.chapter : '')) : '✓ Page read');
+    } catch (err) {
+      note.textContent = 'Something went wrong: ' + err.message;
+    }
+  });
+
+  function downscale(file, maxEdge, quality) {
+    return new Promise(function (resolve, reject) {
+      var img = new Image();
+      var url = URL.createObjectURL(file);
+      img.onload = function () {
+        var scale = Math.min(1, maxEdge / Math.max(img.width, img.height));
+        var canvas = document.createElement('canvas');
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        URL.revokeObjectURL(url);
+        resolve(canvas.toDataURL('image/jpeg', quality).split(',')[1]);
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); reject(new Error('could not read image')); };
+      img.src = url;
+    });
+  }
+
+  /* ---------- read ---------- */
+
+  function bookLabel() {
+    var p = state.page || {};
+    return (p.book_title || 'your book') + (p.chapter ? ' · ' + p.chapter : '');
+  }
+
+  function renderPage() {
+    var p = state.page;
+    if (!p) return;
+    $('book-line').childNodes[0].nodeValue = p.book_title ? (p.book_title + (p.author ? ' — ' + p.author : '')) : 'Your page';
+    $('chapter-line').textContent = p.chapter || 'recognized from your photo';
+
+    var guide = $('guide-slot');
+    if (p.guide && p.guide.takeaways && p.guide.takeaways.length) {
+      var g = '<div class="guide-card"><h3>What to take from this book</h3><ol>';
+      p.guide.takeaways.forEach(function (t) { g += '<li>' + esc(t) + '</li>'; });
+      g += '</ol><p class="q">' + esc(p.guide.carry_question || '') + '</p></div>';
+      guide.innerHTML = g;
+    } else { guide.innerHTML = ''; }
+
+    var container = $('passage');
+    container.innerHTML = '<p class="read-hint">Tap any word for its meaning <i>here</i> · <b>¶</b> unpacks a paragraph · <b>✧</b> keeps a sentence as a Moment</p>';
+    var tricky = {};
+    (p.tricky_words || []).forEach(function (w) { tricky[w.toLowerCase()] = true; });
+
+    p.paragraphs.forEach(function (text) {
+      var para = document.createElement('p');
+      para.className = 'para';
+      var sentences = text.match(/[^.!?]+[.!?]?/g) || [text];
+      sentences.forEach(function (sentence, si) {
+        var s = sentence.trim();
+        if (!s) return;
+        if (si > 0) para.appendChild(document.createTextNode(' '));
+        s.split(' ').forEach(function (token, ti) {
+          var m = token.match(/^([^A-Za-z’']*)([A-Za-z’']+)([^A-Za-z’']*)$/);
+          if (ti > 0) para.appendChild(document.createTextNode(' '));
+          if (!m) { para.appendChild(document.createTextNode(token)); return; }
+          if (m[1]) para.appendChild(document.createTextNode(m[1]));
+          var btn = document.createElement('button');
+          btn.className = 'w' + (tricky[m[2].toLowerCase()] ? ' tricky' : '');
+          btn.type = 'button';
+          btn.textContent = m[2];
+          btn.addEventListener('click', function () { openWord(m[2], s, btn); });
+          para.appendChild(btn);
+          if (m[3]) para.appendChild(document.createTextNode(m[3]));
+        });
+        var smark = document.createElement('button');
+        smark.className = 'smark'; smark.type = 'button'; smark.textContent = '✧';
+        smark.setAttribute('aria-label', 'Keep this sentence as a Moment');
+        smark.addEventListener('click', function () { openMoment(s); });
+        para.appendChild(smark);
+      });
+      var pmark = document.createElement('button');
+      pmark.className = 'pmark'; pmark.type = 'button'; pmark.textContent = '¶';
+      pmark.setAttribute('aria-label', 'Unpack this paragraph');
+      pmark.addEventListener('click', function () { openUnpack(text); });
+      para.appendChild(pmark);
+      container.appendChild(para);
+    });
+  }
+
+  /* ---------- word sheet ---------- */
+
+  async function openWord(display, sentence, btn) {
+    if (btn) btn.classList.add('active');
+    openSheet('<div class="sheet-loading"><span class="spin"></span>Looking at “' + esc(display) + '” in this sentence…</div>');
+    try {
+      var w = await api('/api/word', { word: display, sentence: sentence, book: (state.page && state.page.book_title) || '' });
+      var html = '<div class="hw-line"><span class="hw">' + esc(w.headword || display.toLowerCase()) + '</span>';
+      if (w.ipa) html += '<span class="ipa">' + esc(w.ipa) + '</span>';
+      if (w.pos) html += '<span class="pos">' + esc(w.pos) + '</span>';
+      html += '</div>';
+      html += '<p class="sense">' + esc(w.sense_en || '') + '<span class="zh">' + esc(w.zh || '') + '</span></p>';
+      if (w.trap) html += '<p class="trap"><b>⚠ Careful —</b> ' + esc(w.trap) + '</p>';
+      var re = new RegExp('\\b' + display.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
+      html += '<p class="in-sentence">' + esc(sentence).replace(re, function (mm) { return '<mark>' + mm + '</mark>'; }) + '</p>';
+      var key = (w.headword || display).toLowerCase();
+      var isSaved = state.words.some(function (x) { return x.key === key; });
+      html += '<button class="save-btn' + (isSaved ? ' saved' : '') + '" id="save-word">' + (isSaved ? '✓ Saved to My Words' : '＋ Save to My Words') + '</button>';
+      openSheet(html);
+      $('save-word').addEventListener('click', function () {
+        if (state.words.some(function (x) { return x.key === key; })) return;
+        state.words.unshift({ key: key, zh: w.zh || '', src: bookLabel(), when: today() });
+        save('marginalia.words', state.words);
+        this.classList.add('saved'); this.textContent = '✓ Saved to My Words';
+        renderWords();
+        toast('Saved — ' + state.words.length + ' word' + (state.words.length > 1 ? 's' : '') + ' in My Words');
+      });
+    } catch (err) {
+      openSheet('<div class="sheet-loading">Couldn’t reach the reading companion: ' + esc(err.message) + '</div>');
+    }
+  }
+
+  /* ---------- unpack sheet ---------- */
+
+  async function openUnpack(paragraph) {
+    openSheet('<div class="sheet-loading"><span class="spin"></span>Unpacking this paragraph…</div>');
+    try {
+      var u = await api('/api/unpack', { paragraph: paragraph, book: (state.page && state.page.book_title) || '', chapter: (state.page && state.page.chapter) || '' });
+      var html = '<p class="sheet-title">Unpacking · ' + esc(bookLabel()) + '</p>';
+      html += '<h4 class="unpack-h">In plain English</h4><p class="unpack-p">' + esc(u.plain || '') + '</p>';
+      html += '<h4 class="unpack-h">中文大意</h4><p class="unpack-p">' + esc(u.zh || '') + '</p>';
+      html += '<h4 class="unpack-h">The story underneath</h4><p class="unpack-p">' + esc(u.story || '') + '</p>';
+      html += '<h4 class="unpack-h">Why it still matters</h4><p class="unpack-p">' + esc(u.matters || '') + '</p>';
+      if (u.questions && u.questions.length) {
+        html += '<h4 class="unpack-h">Carry back to the page</h4><ul class="think-list">';
+        u.questions.forEach(function (q) { html += '<li>' + esc(q) + '</li>'; });
+        html += '</ul>';
+      }
+      openSheet(html);
+    } catch (err) {
+      openSheet('<div class="sheet-loading">Couldn’t reach the reading companion: ' + esc(err.message) + '</div>');
+    }
+  }
+
+  /* ---------- moments ---------- */
+
+  function today() {
+    return new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  }
+
+  function openMoment(sentence) {
+    var exists = state.moments.some(function (m) { return m.quote === sentence; });
+    var html = '<p class="sheet-title">A sentence worth keeping · 悟</p>';
+    html += '<div class="moment-preview">“' + esc(sentence) + '”<span class="q-src">' + esc(bookLabel()) + ' · ' + today() + '</span></div>';
+    html += '<button class="save-btn' + (exists ? ' saved' : '') + '" id="keep-moment">' + (exists ? '✧ Kept in Moments' : '✧ Keep this Moment') + '</button>';
+    openSheet(html);
+    $('keep-moment').addEventListener('click', function () {
+      if (state.moments.some(function (m) { return m.quote === sentence; })) return;
+      state.moments.unshift({ quote: sentence, book: (state.page && state.page.book_title) || 'your book', ch: (state.page && state.page.chapter) || '', when: today() });
+      save('marginalia.moments', state.moments);
+      this.classList.add('saved'); this.textContent = '✧ Kept in Moments';
+      renderMoments();
+      toast('Kept — the sentences that make your days, in one place');
+    });
+  }
+
+  function renderMoments() {
+    var body = $('moments-body');
+    if (state.moments.length === 0) {
+      body.innerHTML = '<div class="empty"><span class="big">悟</span>When a sentence lights you up, tap the small ✧ after it. Your enlightening moments collect here — kept with their book and their day.</div>';
+      return;
+    }
+    var html = '';
+    state.moments.forEach(function (m) {
+      html += '<div class="moment-card"><blockquote>' + esc(m.quote) + '</blockquote><div class="m-src"><b>' + esc(m.book) + '</b>' + (m.ch ? '· ' + esc(m.ch) : '') + '<span class="when">' + esc(m.when) + '</span></div></div>';
+    });
+    body.innerHTML = html;
+  }
+
+  function renderWords() {
+    var body = $('words-body');
+    if (state.words.length === 0) {
+      body.innerHTML = '<div class="empty"><span class="big">词</span>Words you tap while reading are collected here — with the meaning they had <i>in your book</i>, ready to review later.</div>';
+      return;
+    }
+    var html = '';
+    state.words.forEach(function (w) {
+      html += '<div class="word-row"><span class="hw">' + esc(w.key) + '</span><span class="zh">' + esc(w.zh) + '</span><span class="src">' + esc(w.src) + '</span></div>';
+    });
+    body.innerHTML = html;
+  }
+
+  /* ---------- wiring ---------- */
+
+  $('resnap').addEventListener('click', function () { show('scr-capture'); });
+  $('nav-read').addEventListener('click', function () { show(state.page ? 'scr-read' : 'scr-capture'); });
+  $('nav-moments').addEventListener('click', function () { show('scr-moments'); });
+  $('nav-words').addEventListener('click', function () { show('scr-words'); });
+
+  renderMoments();
+  renderWords();
+  if (state.page) { renderPage(); show('scr-read'); }
+})();
+</script>
+</body>
+</html>

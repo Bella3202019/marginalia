@@ -94,8 +94,8 @@ resurface "one year ago today you were struck by…".)
 
 | Stage | What ships | Notes |
 |-------|-----------|-------|
-| **v0 — now** | Interactive prototype (`prototype/marginalia.html`) | Full loop simulated on one passage of *On Liberty* Ch. I (public domain). All answers pre-written. |
-| **v1 — MVP** | Phone-first web app (PWA), then iOS | Camera → vision model reads the page + identifies book → live in-context answers via Claude API. One reader, any book. |
+| **v0 — done** | Interactive prototype (`prototype/marginalia.html`) | Full loop simulated on one passage of *On Liberty* Ch. I (public domain). All answers pre-written. |
+| **v1 — built (`app/`)** | Phone-first web app | Camera → Claude vision reads the page + identifies the book → live in-context answers (word senses, unpacking) on any book. Moments + My Words persist locally. Next: host it, then iOS/PWA install polish. |
 | **v2 — habit** | My Words review, Moments sharing, book guides | Spaced repetition with source sentences; Moments as shareable quote cards + anniversary resurfacing; guide library for the reader's shelf (Mill, Foucault, Wittgenstein…); reading history. |
 
 ## v1 technical sketch
