@@ -9,6 +9,7 @@ import { extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 import { readPage, wordSense, unpack } from "./lib/reader.js";
 import { guard, publicConfig } from "./lib/auth.js";
+import { OG_IMAGE_PNG } from "./lib/og-image.js";
 
 const PORT = process.env.PORT || 3000;
 const MOCK = process.env.MARGINALIA_MOCK === "1";
@@ -38,6 +39,11 @@ const server = http.createServer(async (req, res) => {
     if (req.method === "GET" && path === "/api/config") {
       res.writeHead(200, { "content-type": "application/json" });
       res.end(JSON.stringify(publicConfig()));
+      return;
+    }
+    if (req.method === "GET" && path === "/api/og-image") {
+      res.writeHead(200, { "content-type": "image/png", "cache-control": "public, max-age=31536000, immutable" });
+      res.end(OG_IMAGE_PNG);
       return;
     }
     if (req.method === "POST" && ROUTES[path]) {
