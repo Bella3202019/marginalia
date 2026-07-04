@@ -393,6 +393,21 @@
     text-underline-offset: 4px;
   }
   .w.active { background: var(--wash-strong); }
+  .smark {
+    background: none;
+    border: none;
+    padding: 0 3px;
+    margin-left: 1px;
+    font: inherit;
+    font-size: 12px;
+    line-height: 1;
+    color: var(--cinnabar);
+    opacity: 0.45;
+    position: relative;
+    top: -0.45em;
+    border-radius: 4px;
+  }
+  .smark:hover { opacity: 1; background: var(--wash); }
   .legend {
     font-family: var(--sans);
     font-size: 11px;
@@ -470,6 +485,62 @@
     font-size: 14px;
     line-height: 1.6;
     color: var(--ink);
+  }
+
+  /* moments screen */
+  .moments-body { padding: 6px 20px 20px; }
+  .moment-card {
+    position: relative;
+    background: var(--sunken);
+    border-radius: 14px;
+    padding: 22px 20px 14px;
+    margin-bottom: 14px;
+  }
+  .moment-card::before {
+    content: "\201C";
+    position: absolute;
+    top: 2px; left: 12px;
+    font-size: 44px;
+    line-height: 1;
+    color: var(--cinnabar);
+    opacity: 0.85;
+    font-family: var(--serif);
+  }
+  .moment-card blockquote {
+    margin: 0 0 12px;
+    font-style: italic;
+    font-size: 16.5px;
+    line-height: 1.7;
+    text-indent: 18px;
+  }
+  .moment-card .m-src {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    border-top: 1px solid var(--line);
+    padding-top: 9px;
+    font-family: var(--sans);
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+  .moment-card .m-src b { color: var(--ink); font-weight: 600; }
+  .moment-card .m-src .when { margin-left: auto; font-style: italic; }
+  .moment-preview {
+    margin: 14px 0 0;
+    background: var(--sunken);
+    border-radius: 12px;
+    padding: 16px 16px 12px;
+    font-style: italic;
+    font-size: 15.5px;
+    line-height: 1.7;
+  }
+  .moment-preview .q-src {
+    display: block;
+    font-family: var(--sans);
+    font-style: normal;
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-top: 10px;
   }
 
   /* words screen */
@@ -804,6 +875,7 @@
     <span>① Snap the page</span>
     <span>② Tap any word — try “visiting”</span>
     <span>③ Tap ¶ to unpack a paragraph</span>
+    <span>④ Tap ✧ to keep a Moment</span>
   </div>
 
   <div class="demo-stage">
@@ -820,7 +892,7 @@
       <svg width="120" height="44" viewBox="0 0 120 44"><path d="M112 6 C 80 10, 40 14, 12 34"/><polyline points="24,32 12,34 18,22"/></svg>
     </div>
     <div class="mnote mnote-4" aria-hidden="true">
-      every word you tap is kept in <b>My Words</b> for review later
+      when a sentence lights you up, tap the small <b>✧</b> — it becomes a <b>Moment</b>, kept beautifully
       <svg width="90" height="40" viewBox="0 0 90 40"><path d="M84 34 C 60 30, 30 20, 8 8"/><polyline points="20,8 8,8 12,20"/></svg>
     </div>
 
@@ -857,7 +929,7 @@
             <button class="icon-btn" id="resnap">↺ re-snap</button>
           </div>
           <div class="passage" id="passage">
-            <p class="read-hint">Tap any word for its meaning <i>here</i> · tap <b>¶</b> to unpack a paragraph</p>
+            <p class="read-hint">Tap any word for its meaning <i>here</i> · <b>¶</b> unpacks a paragraph · <b>✧</b> keeps a sentence as a Moment</p>
             <!-- paragraphs injected by script -->
             <p class="legend">Words with a <i>cinnabar dotted line</i> are ones Marginalia thinks may trick you — common words used in an uncommon way.</p>
           </div>
@@ -905,10 +977,19 @@
           </div>
         </div>
 
+        <!-- MOMENTS -->
+        <div class="p-screen" id="scr-moments" hidden>
+          <div class="p-top">
+            <div class="t">Moments<small>the sentences that made your days · 悟</small></div>
+          </div>
+          <div class="moments-body" id="moments-body"></div>
+        </div>
+
         <!-- NAV -->
         <nav class="p-nav" aria-label="App sections">
           <button id="nav-read" class="on"><span class="glyph">¶</span>Read</button>
           <button id="nav-guide"><span class="glyph">导</span>Guide</button>
+          <button id="nav-moments"><span class="glyph">悟</span>Moments</button>
           <button id="nav-words"><span class="glyph">词</span>Words<span class="badge" id="words-badge"></span></button>
         </nav>
 
@@ -927,7 +1008,7 @@
 
   <section class="block">
     <p class="eyebrow">Why this exists · 为什么</p>
-    <h2>Two moments where a paper book leaves you alone</h2>
+    <h2>Three moments where a paper book leaves you alone</h2>
     <div class="pain">
       <q>I don’t understand this English word — and the dictionary gives me eight meanings. Which one is it <i>here</i>?</q>
       <span class="a"><b>Marginalia answers with one meaning</b> — the one the author meant in this exact sentence — in plain English first, 中文 to confirm. “Warrant” in Mill isn’t a police warrant; “visiting him with evil” isn’t a visit.</span>
@@ -936,11 +1017,15 @@
       <q>What am I supposed to get from this book? What’s the underlying story of this paragraph?</q>
       <span class="a"><b>Marginalia unpacks on demand</b> — a plain restatement, the 中文大意, the story underneath (who’s arguing with whom, and why it mattered in 1859), and a question to carry back into the page. It guides your reading; it never reads for you.</span>
     </div>
+    <div class="pain">
+      <q>Sometimes a sentence is so enlightening it makes my day. But I have no way to store those moments — to put them together in one place, beautifully.</q>
+      <span class="a"><b>Moments (悟)</b> — tap ✧ when a sentence lights you up. It’s kept exactly as printed, with its book, chapter, and the day it found you — a quiet gallery of the sentences that made your days.</span>
+    </div>
   </section>
 
   <section class="block">
     <p class="eyebrow">How a session works · 怎么用</p>
-    <h2>Three gestures, no typing required</h2>
+    <h2>Four gestures, no typing required</h2>
     <ol class="steps">
       <li>
         <span class="zh-step">拍<small>snap</small></span>
@@ -961,6 +1046,13 @@
         <div>
           <h3>Unpack when you want depth</h3>
           <p>Tap the ¶ beside a paragraph: what it says in plain English, 中文大意, <b>the story underneath</b>, why it matters today, and questions that send you back to the page thinking.</p>
+        </div>
+      </li>
+      <li>
+        <span class="zh-step">藏<small>keep</small></span>
+        <div>
+          <h3>Keep the enlightening moments</h3>
+          <p>When a sentence makes your day, tap ✧. It becomes a <b>Moment</b> — the line, its book, the day — collected in one beautiful place you’ll want to return to.</p>
         </div>
       </li>
     </ol>
@@ -1117,6 +1209,9 @@
 
   var snapped = false;
   var savedWords = [];
+  var savedMoments = [
+    { quote: "Visibility is a trap.", book: "Discipline and Punish", ch: "Part 3", when: "last Tuesday" }
+  ];
   var toastTimer = null;
 
   /* ---------------- helpers ---------------- */
@@ -1131,11 +1226,12 @@
     toastTimer = setTimeout(function () { t.classList.remove('show'); }, ms || 2200);
   }
 
-  var SCREENS = ['scr-capture', 'scr-read', 'scr-guide', 'scr-words'];
+  var SCREENS = ['scr-capture', 'scr-read', 'scr-guide', 'scr-moments', 'scr-words'];
   function show(id) {
     SCREENS.forEach(function (s) { $(s).hidden = (s !== id); });
     $('nav-read').classList.toggle('on', id === 'scr-capture' || id === 'scr-read');
     $('nav-guide').classList.toggle('on', id === 'scr-guide');
+    $('nav-moments').classList.toggle('on', id === 'scr-moments');
     $('nav-words').classList.toggle('on', id === 'scr-words');
     closeSheet();
   }
@@ -1165,21 +1261,33 @@
     PARAGRAPHS.forEach(function (para, pi) {
       var p = document.createElement('p');
       p.className = 'para';
-      para.text.split(' ').forEach(function (token, ti) {
-        var m = token.match(/^([^A-Za-z’']*)([A-Za-z’']+)([^A-Za-z’']*)$/);
-        if (ti > 0) p.appendChild(document.createTextNode(' '));
-        if (!m) { p.appendChild(document.createTextNode(token)); return; }
-        if (m[1]) p.appendChild(document.createTextNode(m[1]));
-        var btn = document.createElement('button');
-        btn.className = 'w';
-        btn.type = 'button';
-        btn.textContent = m[2];
-        var key = m[2].toLowerCase();
-        var entry = DICT[key];
-        if (entry && entry.tricky) btn.className += ' tricky';
-        btn.addEventListener('click', function () { openWord(m[2], key, para.text, btn); });
-        p.appendChild(btn);
-        if (m[3]) p.appendChild(document.createTextNode(m[3]));
+      var sentences = para.text.match(/[^.]+\.?/g) || [para.text];
+      sentences.forEach(function (sentence, si) {
+        var s = sentence.trim();
+        if (si > 0) p.appendChild(document.createTextNode(' '));
+        s.split(' ').forEach(function (token, ti) {
+          var m = token.match(/^([^A-Za-z’']*)([A-Za-z’']+)([^A-Za-z’']*)$/);
+          if (ti > 0) p.appendChild(document.createTextNode(' '));
+          if (!m) { p.appendChild(document.createTextNode(token)); return; }
+          if (m[1]) p.appendChild(document.createTextNode(m[1]));
+          var btn = document.createElement('button');
+          btn.className = 'w';
+          btn.type = 'button';
+          btn.textContent = m[2];
+          var key = m[2].toLowerCase();
+          var entry = DICT[key];
+          if (entry && entry.tricky) btn.className += ' tricky';
+          btn.addEventListener('click', function () { openWord(m[2], key, para.text, btn); });
+          p.appendChild(btn);
+          if (m[3]) p.appendChild(document.createTextNode(m[3]));
+        });
+        var smark = document.createElement('button');
+        smark.className = 'smark';
+        smark.type = 'button';
+        smark.textContent = '✧';
+        smark.setAttribute('aria-label', 'Keep this sentence as a Moment');
+        smark.addEventListener('click', function () { openMoment(s); });
+        p.appendChild(smark);
       });
       var pmark = document.createElement('button');
       pmark.className = 'pmark';
@@ -1263,6 +1371,40 @@
     openSheet(html);
   }
 
+  /* ---------------- moments ---------------- */
+
+  function openMoment(sentence) {
+    var already = savedMoments.some(function (m) { return m.quote === sentence; });
+    var html = '<p class="sheet-title">A sentence worth keeping · 悟</p>';
+    html += '<div class="moment-preview">“' + esc(sentence) + '”<span class="q-src">On Liberty · Chapter I · today</span></div>';
+    html += '<button class="save-btn' + (already ? ' saved' : '') + '" id="keep-moment">' + (already ? '✧ Kept in Moments' : '✧ Keep this Moment') + '</button>';
+    html += '<p class="ai-note">Kept exactly as printed — with its book, chapter, and the day it found you.</p>';
+    openSheet(html);
+    var btn = $('keep-moment');
+    btn.addEventListener('click', function () {
+      if (savedMoments.some(function (m) { return m.quote === sentence; })) return;
+      savedMoments.unshift({ quote: sentence, book: 'On Liberty', ch: 'Chapter I', when: 'today' });
+      btn.classList.add('saved');
+      btn.textContent = '✧ Kept in Moments';
+      renderMoments();
+      toast('Kept — the sentences that make your days, in one place');
+    });
+  }
+
+  function renderMoments() {
+    var body = $('moments-body');
+    if (savedMoments.length === 0) {
+      body.innerHTML = '<div class="empty-words"><span class="big">悟</span>When a sentence lights you up, tap the small ✧ after it. Your enlightening moments collect here — kept with their book and their day.</div>';
+      return;
+    }
+    var html = '';
+    savedMoments.forEach(function (m) {
+      html += '<div class="moment-card"><blockquote>' + esc(m.quote) + '</blockquote>'
+        + '<div class="m-src"><b>' + esc(m.book) + '</b>· ' + esc(m.ch) + '<span class="when">' + esc(m.when) + '</span></div></div>';
+    });
+    body.innerHTML = html;
+  }
+
   /* ---------------- words screen ---------------- */
 
   function renderWords() {
@@ -1289,6 +1431,7 @@
   /* ---------------- wiring ---------------- */
 
   renderPassage();
+  renderMoments();
 
   $('shutter').addEventListener('click', function () {
     var vf = $('viewfinder');
@@ -1310,6 +1453,7 @@
   $('resnap').addEventListener('click', function () { show('scr-capture'); });
   $('nav-read').addEventListener('click', function () { show(snapped ? 'scr-read' : 'scr-capture'); });
   $('nav-guide').addEventListener('click', function () { show('scr-guide'); });
+  $('nav-moments').addEventListener('click', function () { show('scr-moments'); });
   $('nav-words').addEventListener('click', function () { show('scr-words'); });
 
   $('backdrop').addEventListener('click', closeSheet);

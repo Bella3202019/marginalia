@@ -18,13 +18,16 @@ underneath it** — a plain restatement, the 中文大意, the historical/philos
 context, and a question to carry back into the page. Then it gets out of your
 way. The book stays in your hands; the phone stays in the margin.
 
-## The two pain points (in the founder's own words)
+## The three pain points (in the founder's own words)
 
 1. *"Sometimes I don't understand the English word, and I really want to know
    what it means and what they are talking about actually."*
 2. *"I want something that can guide me to read the book — what I can get from
    this book, what are the underlying stories of this paragraph. Help my
    reading be more interactive in the parts that I want."*
+3. *"Sometimes a sentence is so enlightening it can make my day — but I have
+   no way to store that, or put them together in one place beautifully or
+   elegantly."*
 
 ## Product principles
 
@@ -39,7 +42,7 @@ way. The book stays in your hands; the phone stays in the margin.
   that is the practice the reader wants. 中文 appears one line below, to
   confirm understanding, never to replace the English.
 - **Interactive only where the reader wants it.** No forced flows, no streaks,
-  no gamification. Three gestures: snap 拍, tap 点, unpack 解.
+  no gamification. Four gestures: snap 拍, tap 点, unpack 解, keep 藏.
 - **It should feel like an object of the reading world.** The visual identity
   borrows 朱批 — the cinnabar red-ink margin annotations of Chinese
   scholarship — because that is literally what the product is: red ink in the
@@ -72,6 +75,15 @@ whom; what was at stake when it was written) → **Why it still matters** →
 **Carry back to the page** (2 guiding questions). Depth on demand, never by
 default.
 
+### 4. Keep a Moment (藏)
+A small ✧ sits at the end of every sentence. When one lights the reader up —
+the enlightening moment that makes their day — one tap keeps it as a
+**Moment**: the sentence exactly as printed, with its book, chapter, and the
+day it found them. The **Moments** tab is a quiet, typographically beautiful
+gallery of those sentences across every book they've read — the reader's
+private commonplace book. (v2: share a Moment as an elegant quote card;
+resurface "one year ago today you were struck by…".)
+
 ### Supporting surfaces
 - **Guide** — per-book: "three things to take from this book," a chapter map
   with *you are here*, and one question to carry while reading.
@@ -84,7 +96,7 @@ default.
 |-------|-----------|-------|
 | **v0 — now** | Interactive prototype (`prototype/marginalia.html`) | Full loop simulated on one passage of *On Liberty* Ch. I (public domain). All answers pre-written. |
 | **v1 — MVP** | Phone-first web app (PWA), then iOS | Camera → vision model reads the page + identifies book → live in-context answers via Claude API. One reader, any book. |
-| **v2 — habit** | My Words review + book guides | Spaced repetition with source sentences; guide library for the reader's shelf (Mill, Foucault, Wittgenstein…); reading history. |
+| **v2 — habit** | My Words review, Moments sharing, book guides | Spaced repetition with source sentences; Moments as shareable quote cards + anniversary resurfacing; guide library for the reader's shelf (Mill, Foucault, Wittgenstein…); reading history. |
 
 ## v1 technical sketch
 
