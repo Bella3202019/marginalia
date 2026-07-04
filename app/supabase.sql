@@ -39,6 +39,15 @@ alter table public.words enable row level security;
 alter table public.moments enable row level security;
 alter table public.usage_log enable row level security;
 
+drop policy if exists "own words select" on public.words;
+drop policy if exists "own words insert" on public.words;
+drop policy if exists "own words update" on public.words;
+drop policy if exists "own words delete" on public.words;
+drop policy if exists "own moments select" on public.moments;
+drop policy if exists "own moments insert" on public.moments;
+drop policy if exists "own moments update" on public.moments;
+drop policy if exists "own moments delete" on public.moments;
+
 create policy "own words select" on public.words for select using (auth.uid() = user_id);
 create policy "own words insert" on public.words for insert with check (auth.uid() = user_id);
 create policy "own words update" on public.words for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
