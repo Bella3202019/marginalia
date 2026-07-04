@@ -8,6 +8,7 @@ import { readFile } from "node:fs/promises";
 import { extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 import { readPage, wordSense, unpack } from "./lib/reader.js";
+import { guard, publicConfig } from "./lib/auth.js";
 
 const PORT = process.env.PORT || 3000;
 const MOCK = process.env.MARGINALIA_MOCK === "1";
@@ -33,16 +34,27 @@ const ROUTES = {
 
 const server = http.createServer(async (req, res) => {
   try {
-    if (req.method === "POST" && ROUTES[req.url]) {
+    const path = req.url.split("?")[0];
+    if (req.method === "GET" && path === "/api/config") {
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(JSON.stringify(publicConfig()));
+      return;
+    }
+    if (req.method === "POST" && ROUTES[path]) {
+      const g = await guard(req);
+      if (!g.ok) {
+        res.writeHead(g.status, { "content-type": "application/json" });
+        res.end(JSON.stringify({ error: g.error }));
+        return;
+      }
       const body = await readBody(req);
-      const result = await ROUTES[req.url](body);
+      const result = await ROUTES[path](body);
       res.writeHead(result.error ? 502 : 200, { "content-type": "application/json" });
       res.end(JSON.stringify(result));
       return;
     }
-    let path = req.url.split("?")[0];
-    if (path === "/") path = "/index.html";
-    const file = normalize(join(ROOT, path));
+    let file = path === "/" ? "/index.html" : path;
+    file = normalize(join(ROOT, file));
     if (!file.startsWith(ROOT)) { res.writeHead(403); res.end(); return; }
     const data = await readFile(file);
     res.writeHead(200, { "content-type": MIME[extname(file)] || "application/octet-stream" });

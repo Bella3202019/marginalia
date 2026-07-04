@@ -7,6 +7,7 @@
 <meta name="theme-color" content="#14161C" media="(prefers-color-scheme: dark)">
 <title>Marginalia · 批注</title>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
   :root {
     --bg: #F3F0E7; --surface: #FBF9F2; --sunken: #ECE8DB;
@@ -54,6 +55,16 @@
   .shutter-label:active { transform: scale(.97); }
   #file-input { display: none; }
   .scanning-note { font-family: var(--sans); font-size: 13px; color: var(--cinnabar-text); margin-top: 16px; min-height: 20px; }
+  .login-box { display: flex; flex-direction: column; gap: 10px; width: min(320px, 82vw); }
+  .login-box input {
+    font-family: var(--sans); font-size: 15px; color: var(--ink);
+    background: var(--surface); border: 1.5px solid var(--line); border-radius: 10px;
+    padding: 12px 14px; width: 100%;
+  }
+  .login-box input:focus { outline: 2px solid var(--cinnabar); outline-offset: 1px; }
+  .login-note { font-family: var(--sans); font-size: 12.5px; color: var(--ink-soft); max-width: 36ch; }
+  .account-line { font-family: var(--sans); font-size: 11.5px; color: var(--ink-soft); margin-top: 26px; }
+  .account-line button { background: none; border: none; color: var(--cinnabar-text); font-size: 11.5px; text-decoration: underline; text-underline-offset: 3px; padding: 0 2px; }
   .spin { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--wash-strong); border-top-color: var(--cinnabar); border-radius: 50%; vertical-align: -2px; margin-right: 6px; animation: spin 0.8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
   @media (prefers-reduced-motion: reduce) { .spin { animation: none; } }
@@ -134,9 +145,17 @@
       <div class="seal big-seal" aria-hidden="true">批注</div>
       <h1>Marginalia</h1>
       <p>Point your camera at the page you're reading. Tap what confuses you. Keep what lights you up.</p>
-      <label class="shutter-label" for="file-input">📖 Snap the page</label>
-      <input id="file-input" type="file" accept="image/*" capture="environment">
+      <div id="snap-box">
+        <label class="shutter-label" for="file-input">📖 Snap the page</label>
+        <input id="file-input" type="file" accept="image/*" capture="environment">
+      </div>
+      <div id="login-box" class="login-box" hidden>
+        <input id="login-email" type="email" autocomplete="email" placeholder="your@email.com" enterkeyhint="send">
+        <button class="shutter-label" id="login-send" style="justify-content:center">✉ Send me a sign-in link</button>
+        <p class="login-note">One tap in your inbox and you're in — no password. You stay signed in on this device, and your Words and Moments follow you everywhere.</p>
+      </div>
       <div class="scanning-note" id="scan-note"></div>
+      <div class="account-line" id="account-line" hidden></div>
     </div>
   </section>
 
@@ -218,10 +237,109 @@
   function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
   async function api(path, body) {
-    var res = await fetch(path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+    var headers = { 'content-type': 'application/json' };
+    if (auth.token) headers.authorization = 'Bearer ' + auth.token;
+    var res = await fetch(path, { method: 'POST', headers: headers, body: JSON.stringify(body) });
     var data = await res.json().catch(function () { return { error: 'bad response' }; });
     if (!res.ok || data.error) throw new Error(data.error || ('HTTP ' + res.status));
     return data;
+  }
+
+  /* ---------- account (optional — only when the server has Supabase configured) ---------- */
+
+  var auth = { sb: null, user: null, token: null };
+
+  async function initAuth() {
+    try {
+      var cfg = await fetch('/api/config').then(function (r) { return r.json(); });
+      if (!cfg.auth || typeof supabase === 'undefined') return; // open mode — app works as-is
+      auth.sb = supabase.createClient(cfg.supabase_url, cfg.supabase_anon_key);
+      var s = (await auth.sb.auth.getSession()).data.session;
+      applySession(s);
+      auth.sb.auth.onAuthStateChange(function (_event, session) { applySession(session); });
+    } catch (e) { /* config unreachable — stay in open mode */ }
+  }
+
+  function applySession(session) {
+    var wasIn = !!auth.user;
+    auth.token = session ? session.access_token : null;
+    auth.user = session ? session.user : null;
+    updateAuthUI();
+    if (auth.user && !wasIn) syncFromCloud();
+  }
+
+  function updateAuthUI() {
+    if (!auth.sb) return; // auth disabled — leave the default UI alone
+    var signedIn = !!auth.user;
+    $('snap-box').hidden = !signedIn;
+    $('login-box').hidden = signedIn;
+    var line = $('account-line');
+    if (signedIn) {
+      line.hidden = false;
+      line.innerHTML = 'signed in as ' + esc(auth.user.email || '') + ' · <button id="sign-out" type="button">sign out</button>';
+      $('sign-out').addEventListener('click', function () { auth.sb.auth.signOut(); });
+    } else {
+      line.hidden = true;
+    }
+  }
+
+  $('login-send').addEventListener('click', async function () {
+    var email = ($('login-email').value || '').trim();
+    var note = $('scan-note');
+    if (!email || email.indexOf('@') < 1) { note.textContent = 'Type your email first.'; return; }
+    this.disabled = true;
+    note.innerHTML = '<span class="spin"></span>Sending your sign-in link…';
+    try {
+      var r = await auth.sb.auth.signInWithOtp({ email: email, options: { emailRedirectTo: location.origin } });
+      if (r.error) throw r.error;
+      note.textContent = '✉ Check your inbox — tap the link and you’re in.';
+    } catch (err) {
+      note.textContent = 'Couldn’t send the link: ' + (err.message || err);
+    }
+    this.disabled = false;
+  });
+  $('login-email').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('login-send').click(); });
+
+  /* ---------- cloud sync (Words + Moments follow your account) ---------- */
+
+  async function syncFromCloud() {
+    if (!auth.sb || !auth.user) return;
+    try {
+      var res = await Promise.all([
+        auth.sb.from('words').select('key,zh,src,when_label').order('created_at', { ascending: false }),
+        auth.sb.from('moments').select('quote,book,ch,when_label').order('created_at', { ascending: false }),
+      ]);
+      var cloudWords = (res[0].data || []).map(function (r) { return { key: r.key, zh: r.zh, src: r.src, when: r.when_label }; });
+      var cloudMoments = (res[1].data || []).map(function (r) { return { quote: r.quote, book: r.book, ch: r.ch, when: r.when_label }; });
+
+      // merge: cloud first, then local items the cloud doesn't have (and push those up)
+      var haveW = {}; cloudWords.forEach(function (w) { haveW[w.key] = true; });
+      var localOnlyW = state.words.filter(function (w) { return !haveW[w.key]; });
+      state.words = cloudWords.concat(localOnlyW);
+      var haveM = {}; cloudMoments.forEach(function (m) { haveM[m.quote] = true; });
+      var localOnlyM = state.moments.filter(function (m) { return !haveM[m.quote]; });
+      state.moments = cloudMoments.concat(localOnlyM);
+
+      save('marginalia.words', state.words);
+      save('marginalia.moments', state.moments);
+      renderWords(); renderMoments();
+      localOnlyW.forEach(function (w) { cloudSaveWord(w); });
+      localOnlyM.forEach(function (m) { cloudSaveMoment(m); });
+    } catch (e) { /* offline or tables missing — local copy still works */ }
+  }
+
+  function cloudSaveWord(w) {
+    if (!auth.sb || !auth.user) return;
+    auth.sb.from('words')
+      .upsert({ user_id: auth.user.id, key: w.key, zh: w.zh || '', src: w.src || '', when_label: w.when || '' }, { onConflict: 'user_id,key' })
+      .then(function () {}, function () {});
+  }
+
+  function cloudSaveMoment(m) {
+    if (!auth.sb || !auth.user) return;
+    auth.sb.from('moments')
+      .upsert({ user_id: auth.user.id, quote: m.quote, book: m.book || '', ch: m.ch || '', when_label: m.when || '' }, { onConflict: 'user_id,quote' })
+      .then(function () {}, function () {});
   }
 
   $('file-input').addEventListener('change', async function () {
@@ -377,6 +495,7 @@
       $('save-word').addEventListener('click', function () {
         if (state.words.some(function (x) { return x.key === key; })) return;
         state.words.unshift({ key: key, zh: w.zh || '', src: bookLabel(), when: today() });
+        cloudSaveWord(state.words[0]);
         save('marginalia.words', state.words);
         this.classList.add('saved'); this.textContent = '✓ Saved to My Words';
         renderWords();
@@ -420,6 +539,7 @@
     $('keep-moment').addEventListener('click', function () {
       if (state.moments.some(function (m) { return m.quote === sentence; })) return;
       state.moments.unshift({ quote: sentence, book: (state.page && state.page.book_title) || 'your book', ch: (state.page && state.page.chapter) || '', when: today() });
+      cloudSaveMoment(state.moments[0]);
       save('marginalia.moments', state.moments);
       this.classList.add('saved'); this.textContent = '✧ Kept in Moments';
       renderMoments();
@@ -461,6 +581,7 @@
   renderMoments();
   renderWords();
   if (state.page) { renderPage(); show('scr-read'); }
+  initAuth();
 })();
 </script>
 </body>

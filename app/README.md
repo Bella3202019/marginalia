@@ -59,6 +59,31 @@ tap ✧              ──► saved locally   ──► Moments (悟) — your 
   it and the local server share `app/lib/reader.js`, so they never drift.
 - My Words and Moments persist in the browser (localStorage) — no account.
 
+## Accounts & sync (optional — Supabase magic-link login)
+
+Without this, the app is open: no login, data stays in the browser. With it,
+each person signs in once by email (magic link — no password), their Words and
+Moments sync across devices, and the API is gated behind login with a per-user
+daily cap (you pay for one DeepSeek key; nobody can run it up).
+
+One-time setup (~5 minutes, in your Supabase project):
+
+1. **Create the tables** — SQL Editor → New query → paste all of
+   [`supabase.sql`](supabase.sql) → Run.
+2. **Point magic links at your app** — Authentication → URL Configuration →
+   set **Site URL** to your Vercel URL (e.g. `https://marginalia-xxx.vercel.app`).
+   Email sign-in with magic links is on by default.
+3. **Add env vars in Vercel** (Settings → Environment Variables), then redeploy:
+   - `SUPABASE_URL` — Supabase → Settings → API → Project URL
+   - `SUPABASE_ANON_KEY` — same page, the `anon` `public` key
+   - `SUPABASE_SERVICE_ROLE_KEY` — same page, the `service_role` key
+     *(optional — enables the daily cap; keep it secret, server-side only)*
+   - `MARGINALIA_DAILY_LIMIT` — requests/user/day *(optional, default 300)*
+
+That's it. The app detects the config and turns on the sign-in screen; remove
+the env vars and it goes back to open mode. Sessions persist on each device —
+you tap the emailed link once and stay signed in.
+
 ## Notes on DeepSeek
 
 - **DeepSeek's API is text-only** — its V4 "vision" is web-chat only, not exposed
