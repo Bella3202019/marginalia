@@ -1,0 +1,1464 @@
+<title>Marginalia — a reading companion for paper books</title>
+<style>
+  :root {
+    --bg: #F3F0E7;
+    --surface: #FBF9F2;
+    --sunken: #ECE8DB;
+    --ink: #232833;
+    --ink-soft: #5C6472;
+    --line: #D8D2C2;
+    --cinnabar: #BF3B2B;
+    --cinnabar-text: #A93325;
+    --wash: rgba(191, 59, 43, 0.09);
+    --wash-strong: rgba(191, 59, 43, 0.16);
+    --shadow: 0 24px 60px rgba(35, 40, 51, 0.18);
+    --serif: 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, 'Songti SC', 'Noto Serif CJK SC', serif;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', 'PingFang SC', 'Noto Sans CJK SC', Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14161C;
+      --surface: #1D202A;
+      --sunken: #171A22;
+      --ink: #E6E1D3;
+      --ink-soft: #9BA1AE;
+      --line: #31353F;
+      --cinnabar: #E8654E;
+      --cinnabar-text: #EC7259;
+      --wash: rgba(232, 101, 78, 0.13);
+      --wash-strong: rgba(232, 101, 78, 0.22);
+      --shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #F3F0E7;
+    --surface: #FBF9F2;
+    --sunken: #ECE8DB;
+    --ink: #232833;
+    --ink-soft: #5C6472;
+    --line: #D8D2C2;
+    --cinnabar: #BF3B2B;
+    --cinnabar-text: #A93325;
+    --wash: rgba(191, 59, 43, 0.09);
+    --wash-strong: rgba(191, 59, 43, 0.16);
+    --shadow: 0 24px 60px rgba(35, 40, 51, 0.18);
+  }
+  :root[data-theme="dark"] {
+    --bg: #14161C;
+    --surface: #1D202A;
+    --sunken: #171A22;
+    --ink: #E6E1D3;
+    --ink-soft: #9BA1AE;
+    --line: #31353F;
+    --cinnabar: #E8654E;
+    --cinnabar-text: #EC7259;
+    --wash: rgba(232, 101, 78, 0.13);
+    --wash-strong: rgba(232, 101, 78, 0.22);
+    --shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--serif);
+    font-size: 17px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection { background: var(--wash-strong); }
+
+  a { color: var(--cinnabar-text); }
+  button { font-family: inherit; cursor: pointer; }
+  button:focus-visible, a:focus-visible {
+    outline: 2px solid var(--cinnabar);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  .page { max-width: 1060px; margin: 0 auto; padding: 0 24px 96px; }
+
+  /* ---------- masthead ---------- */
+  .masthead {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 28px 0 0;
+  }
+  .seal {
+    width: 44px; height: 44px;
+    background: var(--cinnabar);
+    color: #FBF7EE;
+    border-radius: 6px;
+    display: grid;
+    place-items: center;
+    font-family: var(--serif);
+    font-size: 17px;
+    line-height: 1.1;
+    text-align: center;
+    letter-spacing: 1px;
+    flex: none;
+    user-select: none;
+  }
+  .wordmark { font-size: 21px; font-weight: 600; letter-spacing: 0.3px; }
+  .wordmark small {
+    display: block;
+    font-family: var(--sans);
+    font-size: 11.5px;
+    font-weight: 400;
+    color: var(--ink-soft);
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  /* ---------- hero ---------- */
+  .hero { text-align: center; padding: 56px 0 8px; }
+  .hero h1 {
+    font-size: clamp(30px, 5vw, 44px);
+    font-weight: 600;
+    line-height: 1.2;
+    margin: 0 auto 18px;
+    max-width: 21ch;
+    text-wrap: balance;
+    letter-spacing: -0.3px;
+  }
+  .hero h1 em {
+    font-style: italic;
+    color: var(--cinnabar-text);
+    position: relative;
+    white-space: nowrap;
+  }
+  .hero h1 em::after {
+    content: "";
+    display: block;
+    height: 0.22em;
+    margin-top: 0.02em;
+    background: var(--cinnabar);
+    -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 12" preserveAspectRatio="none"><path d="M3 8 C 55 3, 130 11, 197 5" stroke="black" stroke-width="2.6" fill="none" stroke-linecap="round"/></svg>');
+    -webkit-mask-size: 100% 100%;
+    mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 12" preserveAspectRatio="none"><path d="M3 8 C 55 3, 130 11, 197 5" stroke="black" stroke-width="2.6" fill="none" stroke-linecap="round"/></svg>');
+    mask-size: 100% 100%;
+  }
+  .hero .sub {
+    font-family: var(--sans);
+    font-size: 16px;
+    color: var(--ink-soft);
+    max-width: 52ch;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+  .hero .sub b { color: var(--ink); font-weight: 600; }
+
+  /* ---------- demo stage ---------- */
+  .demo-stage {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    padding: 56px 0 24px;
+  }
+  .mnote {
+    position: absolute;
+    width: 190px;
+    font-style: italic;
+    font-size: 15.5px;
+    line-height: 1.45;
+    color: var(--cinnabar-text);
+    text-align: left;
+  }
+  .mnote svg { display: block; margin-top: 6px; }
+  .mnote svg path { stroke: var(--cinnabar); fill: none; stroke-width: 1.6; stroke-linecap: round; }
+  .mnote svg polyline { stroke: var(--cinnabar); fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .mnote-1 { left: 18px; top: 120px; }
+  .mnote-2 { left: 8px; top: 400px; }
+  .mnote-2 svg { margin-left: 110px; }
+  .mnote-3 { right: 18px; top: 96px; text-align: right; }
+  .mnote-3 svg { margin-left: auto; }
+  .mnote-4 { right: 8px; top: 430px; text-align: right; }
+  .mnote-4 svg { margin-left: auto; }
+  .demo-hints { display: none; }
+  @media (max-width: 980px) {
+    .mnote { display: none; }
+    .demo-hints {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin: 0 0 28px;
+      padding: 0 8px;
+    }
+    .demo-hints span {
+      font-family: var(--sans);
+      font-size: 12.5px;
+      color: var(--cinnabar-text);
+      border: 1px solid var(--line);
+      background: var(--surface);
+      border-radius: 999px;
+      padding: 5px 12px;
+    }
+    .demo-stage { padding-top: 8px; }
+  }
+
+  .demo-label {
+    text-align: center;
+    font-family: var(--sans);
+    font-size: 12px;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 40px 0 0;
+  }
+
+  /* ---------- phone ---------- */
+  .phone {
+    width: 375px;
+    max-width: calc(100vw - 48px);
+    height: 738px;
+    background: #191B21;
+    border-radius: 44px;
+    padding: 12px;
+    box-shadow: var(--shadow);
+    flex: none;
+  }
+  .screen {
+    position: relative;
+    width: 100%; height: 100%;
+    background: var(--surface);
+    border-radius: 34px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  /* On a real phone, drop the fake bezel: the demo becomes the app */
+  @media (max-width: 560px) {
+    .phone {
+      width: 100%;
+      max-width: 100%;
+      height: 82vh;
+      min-height: 600px;
+      background: none;
+      border-radius: 0;
+      padding: 0;
+      box-shadow: none;
+    }
+    .screen {
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+  }
+
+  .p-screen { flex: 1; overflow-y: auto; display: flex; flex-direction: column; min-height: 0; }
+  .p-screen[hidden] { display: none; }
+
+  .p-top {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 18px 10px;
+    font-family: var(--sans);
+  }
+  .p-top .seal { width: 26px; height: 26px; font-size: 9px; border-radius: 4px; letter-spacing: 0; }
+  .p-top .t { font-size: 13px; font-weight: 600; }
+  .p-top .t small { display: block; font-weight: 400; font-size: 11px; color: var(--ink-soft); }
+  .p-top .spacer { flex: 1; }
+  .icon-btn {
+    background: none;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--ink-soft);
+    font-family: var(--sans);
+    font-size: 11px;
+    padding: 5px 9px;
+  }
+
+  /* capture screen */
+  .viewfinder {
+    position: relative;
+    margin: 8px 18px;
+    flex: 1;
+    min-height: 0;
+    border-radius: 16px;
+    background: var(--sunken);
+    overflow: hidden;
+  }
+  .vf-page {
+    position: absolute;
+    inset: -8% -12%;
+    background: var(--surface);
+    transform: rotate(-2.5deg);
+    padding: 12% 14%;
+    font-size: 10.5px;
+    line-height: 1.75;
+    color: var(--ink-soft);
+    text-align: justify;
+    filter: blur(0.5px);
+    user-select: none;
+  }
+  .vf-page h4 { font-size: 12px; margin: 0 0 8px; color: var(--ink); letter-spacing: 2px; text-align: center; font-weight: 600; }
+  .vf-corner { position: absolute; width: 26px; height: 26px; border: 2.5px solid var(--cinnabar); }
+  .vf-corner.tl { top: 12px; left: 12px; border-right: none; border-bottom: none; border-radius: 6px 0 0 0; }
+  .vf-corner.tr { top: 12px; right: 12px; border-left: none; border-bottom: none; border-radius: 0 6px 0 0; }
+  .vf-corner.bl { bottom: 12px; left: 12px; border-right: none; border-top: none; border-radius: 0 0 0 6px; }
+  .vf-corner.br { bottom: 12px; right: 12px; border-left: none; border-top: none; border-radius: 0 0 6px 0; }
+  .scanline {
+    position: absolute;
+    left: 6px; right: 6px;
+    height: 46px;
+    top: -50px;
+    background: linear-gradient(to bottom, transparent, var(--wash-strong) 70%, var(--cinnabar));
+    opacity: 0;
+    pointer-events: none;
+  }
+  .scanning .scanline { animation: scan 1.4s ease-in-out forwards; }
+  @keyframes scan {
+    0% { top: -50px; opacity: 1; }
+    100% { top: 100%; opacity: 1; }
+  }
+  .capture-foot {
+    flex: none;
+    text-align: center;
+    padding: 14px 18px 18px;
+    font-family: var(--sans);
+  }
+  .capture-foot .hint { font-size: 12.5px; color: var(--ink-soft); margin: 0 0 14px; }
+  .shutter {
+    width: 66px; height: 66px;
+    border-radius: 50%;
+    border: 3px solid var(--cinnabar);
+    background: var(--surface);
+    padding: 4px;
+    display: inline-grid;
+  }
+  .shutter i { display: block; width: 100%; height: 100%; border-radius: 50%; background: var(--cinnabar); }
+  .shutter:active i { transform: scale(0.88); }
+  .alt-link {
+    display: block;
+    margin-top: 12px;
+    background: none;
+    border: none;
+    font-family: var(--sans);
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  /* read screen */
+  .passage { padding: 6px 20px 20px; }
+  .read-hint {
+    font-family: var(--sans);
+    font-size: 11.5px;
+    color: var(--cinnabar-text);
+    background: var(--wash);
+    border-radius: 8px;
+    padding: 7px 11px;
+    margin: 0 0 14px;
+  }
+  .para {
+    position: relative;
+    margin: 0 0 18px;
+    padding-right: 26px;
+    font-size: 16.5px;
+    line-height: 1.8;
+  }
+  .pmark {
+    position: absolute;
+    right: -2px; top: 4px;
+    background: none;
+    border: none;
+    color: var(--cinnabar);
+    font-family: var(--serif);
+    font-size: 17px;
+    line-height: 1;
+    padding: 4px;
+    opacity: 0.85;
+  }
+  .pmark:hover { background: var(--wash); border-radius: 6px; }
+  .w {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+    border-radius: 3px;
+  }
+  .w:hover { background: var(--wash); }
+  .w.tricky {
+    text-decoration: underline dotted var(--cinnabar);
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 4px;
+  }
+  .w.active { background: var(--wash-strong); }
+  .smark {
+    background: none;
+    border: none;
+    padding: 0 3px;
+    margin-left: 1px;
+    font: inherit;
+    font-size: 12px;
+    line-height: 1;
+    color: var(--cinnabar);
+    opacity: 0.45;
+    position: relative;
+    top: -0.45em;
+    border-radius: 4px;
+  }
+  .smark:hover { opacity: 1; background: var(--wash); }
+  .legend {
+    font-family: var(--sans);
+    font-size: 11px;
+    color: var(--ink-soft);
+    border-top: 1px solid var(--line);
+    padding-top: 10px;
+    margin-top: 4px;
+  }
+  .legend i {
+    font-style: normal;
+    color: var(--cinnabar-text);
+    text-decoration: underline dotted var(--cinnabar);
+    text-underline-offset: 3px;
+  }
+
+  /* guide screen */
+  .guide-body { padding: 6px 20px 20px; font-family: var(--sans); }
+  .book-card {
+    display: flex;
+    gap: 14px;
+    background: var(--sunken);
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 18px;
+    align-items: center;
+  }
+  .book-spine {
+    flex: none;
+    width: 52px; height: 74px;
+    border-radius: 3px 7px 7px 3px;
+    background: var(--cinnabar);
+    color: #FBF7EE;
+    display: grid;
+    place-items: center;
+    font-family: var(--serif);
+    font-size: 9px;
+    text-align: center;
+    line-height: 1.4;
+    padding: 4px;
+    box-shadow: inset 3px 0 0 rgba(0,0,0,0.18);
+  }
+  .book-card .meta { font-size: 12px; color: var(--ink-soft); }
+  .book-card .meta b { display: block; font-size: 14px; color: var(--ink); font-family: var(--serif); margin-bottom: 2px; }
+  .g-h {
+    font-size: 10.5px;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 18px 0 8px;
+  }
+  .g-list { margin: 0; padding: 0; list-style: none; font-size: 13px; line-height: 1.55; }
+  .g-list li { padding: 7px 0 7px 22px; position: relative; border-bottom: 1px solid var(--line); }
+  .g-list li:last-child { border-bottom: none; }
+  .g-list li::before { content: attr(data-n); position: absolute; left: 0; top: 7px; color: var(--cinnabar-text); font-family: var(--serif); font-style: italic; }
+  .ch-map { margin: 0; padding: 0; list-style: none; font-size: 12.5px; }
+  .ch-map li { display: flex; gap: 8px; align-items: baseline; padding: 5px 0; color: var(--ink-soft); }
+  .ch-map li b { color: var(--ink); font-weight: 500; }
+  .ch-map .roman { flex: none; width: 24px; font-family: var(--serif); font-style: italic; color: var(--ink-soft); }
+  .you-are-here {
+    flex: none;
+    margin-left: auto;
+    font-size: 10px;
+    color: var(--cinnabar-text);
+    background: var(--wash);
+    border-radius: 999px;
+    padding: 2px 8px;
+    white-space: nowrap;
+  }
+  .today-q {
+    background: var(--wash);
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--ink);
+  }
+
+  /* moments screen */
+  .moments-body { padding: 6px 20px 20px; }
+  .moment-card {
+    position: relative;
+    background: var(--sunken);
+    border-radius: 14px;
+    padding: 22px 20px 14px;
+    margin-bottom: 14px;
+  }
+  .moment-card::before {
+    content: "\201C";
+    position: absolute;
+    top: 2px; left: 12px;
+    font-size: 44px;
+    line-height: 1;
+    color: var(--cinnabar);
+    opacity: 0.85;
+    font-family: var(--serif);
+  }
+  .moment-card blockquote {
+    margin: 0 0 12px;
+    font-style: italic;
+    font-size: 16.5px;
+    line-height: 1.7;
+    text-indent: 18px;
+  }
+  .moment-card .m-src {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    border-top: 1px solid var(--line);
+    padding-top: 9px;
+    font-family: var(--sans);
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+  .moment-card .m-src b { color: var(--ink); font-weight: 600; }
+  .moment-card .m-src .when { margin-left: auto; font-style: italic; }
+  .moment-preview {
+    margin: 14px 0 0;
+    background: var(--sunken);
+    border-radius: 12px;
+    padding: 16px 16px 12px;
+    font-style: italic;
+    font-size: 15.5px;
+    line-height: 1.7;
+  }
+  .moment-preview .q-src {
+    display: block;
+    font-family: var(--sans);
+    font-style: normal;
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-top: 10px;
+  }
+
+  /* words screen */
+  .words-body { padding: 6px 20px 20px; font-family: var(--sans); }
+  .empty-words {
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 13px;
+    line-height: 1.6;
+    padding: 48px 20px;
+  }
+  .empty-words .big { font-family: var(--serif); font-size: 30px; display: block; margin-bottom: 10px; color: var(--cinnabar-text); }
+  .word-row {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 11px 2px;
+    border-bottom: 1px solid var(--line);
+    font-size: 13.5px;
+  }
+  .word-row .hw { font-family: var(--serif); font-size: 16px; font-weight: 600; }
+  .word-row .zh { color: var(--ink-soft); }
+  .word-row .src { margin-left: auto; font-size: 10.5px; color: var(--ink-soft); font-style: italic; flex: none; }
+  .review-btn {
+    width: 100%;
+    margin-top: 16px;
+    background: var(--cinnabar);
+    color: #FBF7EE;
+    border: none;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 11px;
+  }
+
+  /* bottom nav */
+  .p-nav {
+    flex: none;
+    display: flex;
+    border-top: 1px solid var(--line);
+    background: var(--surface);
+    font-family: var(--sans);
+    padding-bottom: 6px;
+  }
+  .p-nav button {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: 9px 0 7px;
+    font-size: 10.5px;
+    letter-spacing: 0.4px;
+    color: var(--ink-soft);
+    display: grid;
+    justify-items: center;
+    gap: 2px;
+  }
+  .p-nav button .glyph { font-family: var(--serif); font-size: 17px; line-height: 1; }
+  .p-nav button.on { color: var(--cinnabar-text); }
+  .p-nav button .badge {
+    position: absolute;
+    transform: translate(16px, -4px);
+    background: var(--cinnabar);
+    color: #FBF7EE;
+    font-size: 9px;
+    border-radius: 999px;
+    min-width: 15px;
+    padding: 1px 4px;
+    display: none;
+  }
+
+  /* sheet */
+  .backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(20, 22, 28, 0.4);
+    z-index: 5;
+  }
+  .backdrop[hidden] { display: none; }
+  .sheet {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    max-height: 78%;
+    background: var(--surface);
+    border-radius: 22px 22px 0 0;
+    z-index: 6;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 -12px 40px rgba(20, 22, 28, 0.25);
+  }
+  .sheet[hidden] { display: none; }
+  .sheet-grip { flex: none; width: 40px; height: 4px; border-radius: 2px; background: var(--line); margin: 10px auto 0; }
+  .sheet-scroll { overflow-y: auto; padding: 12px 20px 22px; }
+  @media (prefers-reduced-motion: no-preference) {
+    .sheet { animation: rise 0.24s ease-out; }
+    @keyframes rise { from { transform: translateY(30px); opacity: 0.4; } to { transform: none; opacity: 1; } }
+  }
+
+  .hw-line { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .hw-line .hw { font-size: 26px; font-weight: 600; }
+  .hw-line .ipa { font-family: var(--sans); font-size: 13px; color: var(--ink-soft); }
+  .hw-line .pos {
+    font-family: var(--sans);
+    font-size: 10.5px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--cinnabar-text);
+    background: var(--wash);
+    border-radius: 4px;
+    padding: 2px 7px;
+  }
+  .sense { margin: 12px 0 0; font-size: 15px; line-height: 1.6; }
+  .sense .zh {
+    display: block;
+    font-size: 16px;
+    margin-top: 6px;
+    color: var(--ink);
+  }
+  .trap {
+    margin: 14px 0 0;
+    font-family: var(--sans);
+    font-size: 12.5px;
+    line-height: 1.55;
+    background: var(--wash);
+    border-left: 3px solid var(--cinnabar);
+    border-radius: 0 10px 10px 0;
+    padding: 9px 12px;
+    color: var(--ink);
+  }
+  .trap b { color: var(--cinnabar-text); }
+  .in-sentence {
+    margin: 14px 0 0;
+    font-style: italic;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    border-left: 2px solid var(--line);
+    padding-left: 12px;
+    line-height: 1.6;
+  }
+  .in-sentence mark { background: var(--wash-strong); color: inherit; border-radius: 2px; padding: 0 2px; }
+  .save-btn {
+    margin-top: 18px;
+    width: 100%;
+    border: 1.5px solid var(--cinnabar);
+    background: none;
+    color: var(--cinnabar-text);
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 10px;
+    padding: 10px;
+  }
+  .save-btn.saved { background: var(--cinnabar); color: #FBF7EE; }
+  .ai-note {
+    margin-top: 14px;
+    font-family: var(--sans);
+    font-size: 11px;
+    color: var(--ink-soft);
+    text-align: center;
+  }
+
+  .unpack-h {
+    font-family: var(--sans);
+    font-size: 10.5px;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: var(--cinnabar-text);
+    margin: 18px 0 6px;
+  }
+  .unpack-h:first-of-type { margin-top: 10px; }
+  .unpack-p { margin: 0; font-size: 14.5px; line-height: 1.7; }
+  .unpack-p.zh { font-size: 15px; }
+  .think-list { margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.65; }
+  .think-list li { margin-bottom: 8px; }
+  .sheet-title {
+    font-family: var(--sans);
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin: 2px 0 0;
+  }
+
+  /* toast */
+  .toast {
+    position: absolute;
+    left: 50%;
+    bottom: 74px;
+    transform: translateX(-50%);
+    background: var(--ink);
+    color: var(--bg);
+    font-family: var(--sans);
+    font-size: 12px;
+    border-radius: 999px;
+    padding: 8px 16px;
+    white-space: nowrap;
+    max-width: 90%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    z-index: 8;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+  }
+  .toast.show { opacity: 1; }
+
+  /* ---------- landing sections ---------- */
+  section.block { max-width: 720px; margin: 0 auto; padding: 56px 0 0; }
+  .eyebrow {
+    font-family: var(--sans);
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--cinnabar-text);
+    margin: 0 0 10px;
+  }
+  section.block h2 {
+    font-size: 27px;
+    font-weight: 600;
+    margin: 0 0 16px;
+    letter-spacing: -0.2px;
+    text-wrap: balance;
+  }
+  section.block p { max-width: 62ch; }
+  .pain {
+    border-left: 3px solid var(--cinnabar);
+    background: var(--surface);
+    border-radius: 0 14px 14px 0;
+    padding: 16px 20px;
+    margin: 18px 0;
+  }
+  .pain q { font-style: italic; font-size: 18px; quotes: '\201C' '\201D'; }
+  .pain .a {
+    display: block;
+    font-family: var(--sans);
+    font-size: 14px;
+    color: var(--ink-soft);
+    margin-top: 8px;
+    line-height: 1.6;
+  }
+  .pain .a b { color: var(--cinnabar-text); font-weight: 600; }
+
+  .steps { list-style: none; margin: 24px 0 0; padding: 0; display: grid; gap: 0; }
+  .steps li {
+    display: grid;
+    grid-template-columns: 52px 1fr;
+    gap: 16px;
+    padding: 18px 0;
+    border-top: 1px solid var(--line);
+  }
+  .steps .zh-step {
+    font-size: 24px;
+    color: var(--cinnabar-text);
+    line-height: 1.2;
+    text-align: center;
+  }
+  .steps .zh-step small { display: block; font-family: var(--sans); font-size: 10px; letter-spacing: 1px; color: var(--ink-soft); margin-top: 2px; }
+  .steps h3 { margin: 0 0 4px; font-size: 18px; font-weight: 600; }
+  .steps p { margin: 0; font-family: var(--sans); font-size: 14.5px; color: var(--ink-soft); line-height: 1.65; }
+  .steps p b { color: var(--ink); font-weight: 600; }
+
+  .thesis {
+    margin: 40px 0 0;
+    text-align: center;
+    font-size: 22px;
+    font-style: italic;
+    color: var(--ink);
+    text-wrap: balance;
+  }
+  .thesis .zh { display: block; font-style: normal; font-size: 16px; color: var(--ink-soft); margin-top: 8px; }
+
+  .diff-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 24px; }
+  @media (max-width: 640px) { .diff-grid { grid-template-columns: 1fr; } }
+  .diff {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px 20px;
+  }
+  .diff h3 { margin: 0 0 6px; font-size: 16.5px; font-weight: 600; }
+  .diff h3 .zh { color: var(--cinnabar-text); font-weight: 400; font-size: 14px; margin-left: 6px; }
+  .diff p { margin: 0; font-family: var(--sans); font-size: 13.5px; color: var(--ink-soft); line-height: 1.6; }
+
+  .road { list-style: none; margin: 24px 0 0; padding: 0; }
+  .road li {
+    display: grid;
+    grid-template-columns: 92px 1fr;
+    gap: 16px;
+    padding: 16px 0;
+    border-top: 1px solid var(--line);
+  }
+  .road .tag {
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    padding-top: 3px;
+  }
+  .road .tag.now { color: var(--cinnabar-text); }
+  .road h3 { margin: 0 0 4px; font-size: 17px; font-weight: 600; }
+  .road p { margin: 0; font-family: var(--sans); font-size: 14px; color: var(--ink-soft); line-height: 1.65; }
+
+  footer.colophon {
+    max-width: 720px;
+    margin: 72px auto 0;
+    border-top: 1px solid var(--line);
+    padding-top: 20px;
+    font-family: var(--sans);
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    line-height: 1.7;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .scanning .scanline { animation: none; opacity: 0; }
+    .sheet { animation: none; }
+    * { transition: none !important; }
+  }
+</style>
+
+<div class="page">
+  <header class="masthead">
+    <div class="seal" aria-hidden="true">批<br>注</div>
+    <div class="wordmark">Marginalia<small>a reading companion · 批注</small></div>
+  </header>
+
+  <section class="hero">
+    <h1>Keep reading the paper book. <em>Help lives in the margin.</em></h1>
+    <p class="sub">You're deep in Foucault and a sentence stops making sense. Marginalia is the phone beside your book: <b>snap the page, tap what confuses you</b> — a word gets its meaning <i>in this sentence</i>, a paragraph gets its underlying story. Then it gets out of your way.</p>
+  </section>
+
+  <div class="demo-hints" aria-hidden="true">
+    <span>① Snap the page</span>
+    <span>② Tap any word — try “visiting”</span>
+    <span>③ Tap ¶ to unpack a paragraph</span>
+    <span>④ Tap ✧ to keep a Moment</span>
+  </div>
+
+  <div class="demo-stage">
+    <div class="mnote mnote-1" aria-hidden="true">
+      tap any word you don’t know — start with <b>“warrant”</b>
+      <svg width="120" height="44" viewBox="0 0 120 44"><path d="M8 6 C 40 10, 80 14, 108 34"/><polyline points="96,32 108,34 102,22"/></svg>
+    </div>
+    <div class="mnote mnote-2" aria-hidden="true">
+      “visiting” here does <b>not</b> mean 拜访 — tap it and see why
+      <svg width="90" height="40" viewBox="0 0 90 40"><path d="M6 34 C 30 30, 60 20, 82 8"/><polyline points="70,8 82,8 78,20"/></svg>
+    </div>
+    <div class="mnote mnote-3" aria-hidden="true">
+      the cinnabar <b>¶</b> unpacks the paragraph: plain English, 中文大意, the story underneath
+      <svg width="120" height="44" viewBox="0 0 120 44"><path d="M112 6 C 80 10, 40 14, 12 34"/><polyline points="24,32 12,34 18,22"/></svg>
+    </div>
+    <div class="mnote mnote-4" aria-hidden="true">
+      when a sentence lights you up, tap the small <b>✧</b> — it becomes a <b>Moment</b>, kept beautifully
+      <svg width="90" height="40" viewBox="0 0 90 40"><path d="M84 34 C 60 30, 30 20, 8 8"/><polyline points="20,8 8,8 12,20"/></svg>
+    </div>
+
+    <div class="phone">
+      <div class="screen" id="screen">
+
+        <!-- CAPTURE -->
+        <div class="p-screen" id="scr-capture">
+          <div class="p-top">
+            <div class="seal" aria-hidden="true">批注</div>
+            <div class="t">Marginalia<small>ready to read</small></div>
+          </div>
+          <div class="viewfinder" id="viewfinder">
+            <div class="vf-page" aria-hidden="true">
+              <h4>ON LIBERTY</h4>
+              The object of this Essay is to assert one very simple principle, as entitled to govern absolutely the dealings of society with the individual in the way of compulsion and control, whether the means used be physical force in the form of legal penalties, or the moral coercion of public opinion. That principle is, that the sole end for which mankind are warranted, individually or collectively, in interfering with the liberty of action of any of their number, is self-protection. That the only purpose for which power can be rightfully exercised over any member of a civilised community, against his will, is to prevent harm to others. His own good, either physical or moral, is not a sufficient warrant. He cannot rightfully be compelled to do or forbear because it will be better for him to do so, because it will make him happier, because, in the opinions of others, to do so would be wise, or even right. These are good reasons for remonstrating with him, or reasoning with him, or persuading him, or entreating him, but not for compelling him, or visiting him with any evil in case he do otherwise. To justify that, the conduct from which it is desired to deter him must be calculated to produce evil to some one else. The only part of the conduct of any one, for which he is amenable to society, is that which concerns others…
+            </div>
+            <span class="vf-corner tl"></span><span class="vf-corner tr"></span>
+            <span class="vf-corner bl"></span><span class="vf-corner br"></span>
+            <div class="scanline"></div>
+          </div>
+          <div class="capture-foot">
+            <p class="hint">Point at the page you’re reading, then snap.</p>
+            <button class="shutter" id="shutter" aria-label="Snap the page"><i></i></button>
+            <button class="alt-link" id="paste-link">or paste / dictate text instead</button>
+          </div>
+        </div>
+
+        <!-- READ -->
+        <div class="p-screen" id="scr-read" hidden>
+          <div class="p-top">
+            <div class="t">On Liberty — J. S. Mill<small>Chapter I · Introductory — recognized from your photo</small></div>
+            <div class="spacer"></div>
+            <button class="icon-btn" id="resnap">↺ re-snap</button>
+          </div>
+          <div class="passage" id="passage">
+            <p class="read-hint">Tap any word for its meaning <i>here</i> · <b>¶</b> unpacks a paragraph · <b>✧</b> keeps a sentence as a Moment</p>
+            <!-- paragraphs injected by script -->
+            <p class="legend">Words with a <i>cinnabar dotted line</i> are ones Marginalia thinks may trick you — common words used in an uncommon way.</p>
+          </div>
+        </div>
+
+        <!-- GUIDE -->
+        <div class="p-screen" id="scr-guide" hidden>
+          <div class="p-top">
+            <div class="t">Reading guide<small>what to take from this book</small></div>
+          </div>
+          <div class="guide-body">
+            <div class="book-card">
+              <div class="book-spine" aria-hidden="true">ON<br>LIBERTY<br>·<br>MILL</div>
+              <div class="meta"><b>On Liberty</b>John Stuart Mill · 1859<br>Political philosophy · ~120 pages</div>
+            </div>
+            <h3 class="g-h">Three things to take from this book</h3>
+            <ol class="g-list">
+              <li data-n="一">The <b>harm principle</b> — the one-sentence rule for when society may interfere with a person. You just read it.</li>
+              <li data-n="二">The strongest defense of <b>free speech</b> ever written (Ch. II) — including why even wrong opinions must be heard.</li>
+              <li data-n="三"><b>Individuality</b> as a good in itself (Ch. III) — why society needs people who run “experiments of living.”</li>
+            </ol>
+            <h3 class="g-h">Where you are</h3>
+            <ol class="ch-map">
+              <li><span class="roman">I</span><b>Introductory</b><span class="you-are-here">you are here</span></li>
+              <li><span class="roman">II</span>Of the Liberty of Thought and Discussion</li>
+              <li><span class="roman">III</span>Of Individuality</li>
+              <li><span class="roman">IV</span>Of the Limits to the Authority of Society</li>
+              <li><span class="roman">V</span>Applications</li>
+            </ol>
+            <h3 class="g-h">Carry this question as you read</h3>
+            <p class="today-q">Is Mill worried about <b>government</b> power — or the quieter pressure of other people’s opinions? Watch closely: he fears the second one more.</p>
+          </div>
+        </div>
+
+        <!-- WORDS -->
+        <div class="p-screen" id="scr-words" hidden>
+          <div class="p-top">
+            <div class="t">My Words<small>collected while you read</small></div>
+          </div>
+          <div class="words-body" id="words-body">
+            <div class="empty-words">
+              <span class="big">词</span>
+              Words you tap while reading are collected here — with the meaning they had <i>in your book</i>, ready to review later.
+            </div>
+          </div>
+        </div>
+
+        <!-- MOMENTS -->
+        <div class="p-screen" id="scr-moments" hidden>
+          <div class="p-top">
+            <div class="t">Moments<small>the sentences that made your days · 悟</small></div>
+          </div>
+          <div class="moments-body" id="moments-body"></div>
+        </div>
+
+        <!-- NAV -->
+        <nav class="p-nav" aria-label="App sections">
+          <button id="nav-read" class="on"><span class="glyph">¶</span>Read</button>
+          <button id="nav-guide"><span class="glyph">导</span>Guide</button>
+          <button id="nav-moments"><span class="glyph">悟</span>Moments</button>
+          <button id="nav-words"><span class="glyph">词</span>Words<span class="badge" id="words-badge"></span></button>
+        </nav>
+
+        <!-- SHEET -->
+        <div class="backdrop" id="backdrop" hidden></div>
+        <div class="sheet" id="sheet" hidden role="dialog" aria-modal="true">
+          <div class="sheet-grip"></div>
+          <div class="sheet-scroll" id="sheet-scroll"></div>
+        </div>
+
+        <div class="toast" id="toast" role="status"></div>
+      </div>
+    </div>
+  </div>
+  <p class="demo-label">Working prototype — answers are pre-written for this one passage; the real app answers for any page of any book</p>
+
+  <section class="block">
+    <p class="eyebrow">Why this exists · 为什么</p>
+    <h2>Three moments where a paper book leaves you alone</h2>
+    <div class="pain">
+      <q>I don’t understand this English word — and the dictionary gives me eight meanings. Which one is it <i>here</i>?</q>
+      <span class="a"><b>Marginalia answers with one meaning</b> — the one the author meant in this exact sentence — in plain English first, 中文 to confirm. “Warrant” in Mill isn’t a police warrant; “visiting him with evil” isn’t a visit.</span>
+    </div>
+    <div class="pain">
+      <q>What am I supposed to get from this book? What’s the underlying story of this paragraph?</q>
+      <span class="a"><b>Marginalia unpacks on demand</b> — a plain restatement, the 中文大意, the story underneath (who’s arguing with whom, and why it mattered in 1859), and a question to carry back into the page. It guides your reading; it never reads for you.</span>
+    </div>
+    <div class="pain">
+      <q>Sometimes a sentence is so enlightening it makes my day. But I have no way to store those moments — to put them together in one place, beautifully.</q>
+      <span class="a"><b>Moments (悟)</b> — tap ✧ when a sentence lights you up. It’s kept exactly as printed, with its book, chapter, and the day it found you — a quiet gallery of the sentences that made your days.</span>
+    </div>
+  </section>
+
+  <section class="block">
+    <p class="eyebrow">How a session works · 怎么用</p>
+    <h2>Four gestures, no typing required</h2>
+    <ol class="steps">
+      <li>
+        <span class="zh-step">拍<small>snap</small></span>
+        <div>
+          <h3>Snap the page</h3>
+          <p>Point your phone at the open book. Marginalia reads the page (OCR), and recognizes <b>which book and chapter</b> you’re in — so every answer knows its context.</p>
+        </div>
+      </li>
+      <li>
+        <span class="zh-step">点<small>tap</small></span>
+        <div>
+          <h3>Tap what confuses you</h3>
+          <p>A word gets its meaning <b>in this sentence</b> — pronunciation, one in-context sense, 中文, and a warning when a familiar word is wearing an unfamiliar meaning.</p>
+        </div>
+      </li>
+      <li>
+        <span class="zh-step">解<small>unpack</small></span>
+        <div>
+          <h3>Unpack when you want depth</h3>
+          <p>Tap the ¶ beside a paragraph: what it says in plain English, 中文大意, <b>the story underneath</b>, why it matters today, and questions that send you back to the page thinking.</p>
+        </div>
+      </li>
+      <li>
+        <span class="zh-step">藏<small>keep</small></span>
+        <div>
+          <h3>Keep the enlightening moments</h3>
+          <p>When a sentence makes your day, tap ✧. It becomes a <b>Moment</b> — the line, its book, the day — collected in one beautiful place you’ll want to return to.</p>
+        </div>
+      </li>
+    </ol>
+    <p class="thesis">“The book stays in your hands.<br>The phone stays in the margin.”<span class="zh">书在你手里，帮助在页边。</span></p>
+  </section>
+
+  <section class="block">
+    <p class="eyebrow">What makes it different · 不一样的地方</p>
+    <h2>Built for a bilingual reader of serious books</h2>
+    <div class="diff-grid">
+      <div class="diff">
+        <h3>One sense, not eight<span class="zh">语境释义</span></h3>
+        <p>Dictionary apps dump every meaning and let you guess. Marginalia gives the single sense the author intended in this sentence — because it can see the sentence.</p>
+      </div>
+      <div class="diff">
+        <h3>Tricky-word radar<span class="zh">朱批</span></h3>
+        <p>The cinnabar dotted line marks words likely to trick a non-native reader — usually common words in uncommon senses (“will,” “visiting,” “warrant”). Named after 朱批, the red-ink notes of Chinese scholars.</p>
+      </div>
+      <div class="diff">
+        <h3>中文 as a bridge, not a crutch<span class="zh">双语</span></h3>
+        <p>Explanations lead in simple English — that’s the practice you want. 中文 appears one line below, to confirm you understood, never to replace the English.</p>
+      </div>
+      <div class="diff">
+        <h3>Guided, never summarized<span class="zh">伴读</span></h3>
+        <p>No book summaries that replace reading. Marginalia tells you what to look for, unpacks what you ask about, and hands you back a question — the reading stays yours.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <p class="eyebrow">Build plan · 计划</p>
+    <h2>From this prototype to your bookshelf</h2>
+    <ol class="road">
+      <li>
+        <span class="tag now">v0 · now</span>
+        <div>
+          <h3>This prototype</h3>
+          <p>The full reading loop — snap, tap, unpack, collect — simulated end-to-end on one passage of <i>On Liberty</i>, to make the idea concrete enough to react to.</p>
+        </div>
+      </li>
+      <li>
+        <span class="tag">v1 · mvp</span>
+        <div>
+          <h3>Real camera, real answers</h3>
+          <p>A phone web app (then iOS): camera photo → Claude vision reads the page and identifies the book → tap any word or paragraph for a live, in-context answer. One book at a time, works on any book.</p>
+        </div>
+      </li>
+      <li>
+        <span class="tag">v2 · habit</span>
+        <div>
+          <h3>Your words come back</h3>
+          <p>Spaced-repetition review of the words you tapped — each one quizzed with the sentence it came from. Plus reading history and per-book guides for your shelf: Mill, Foucault, Wittgenstein…</p>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <footer class="colophon">
+    <b>Marginalia · 批注</b> — concept prototype. The demo passage is from John Stuart Mill, <i>On Liberty</i> (1859), Chapter I, public domain. All demo responses are pre-written to show the experience; in the product they are generated live by an AI that can see your page. Cinnabar red (朱砂) is borrowed from 朱批 — the red-ink margin annotations of Chinese scholarship — because that is what this product is: red ink in the margins of your English books.
+  </footer>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---------------- data ---------------- */
+
+  var PARAGRAPHS = [
+    {
+      text: "That the only purpose for which power can be rightfully exercised over any member of a civilised community, against his will, is to prevent harm to others. His own good, either physical or moral, is not a sufficient warrant.",
+      unpack: {
+        plain: "Society may force a person to do something for exactly one reason: to stop them from harming other people. “It’s for your own good” — whether about your body or your character — is never a good enough reason.",
+        zh: "社会唯一可以正当地强制一个人的理由，是防止他伤害别人。“为你好”——无论是为你的身体还是品德——永远不足以成为强制你的理由。",
+        story: "You just read the most famous sentence in this book. It is known as the harm principle (伤害原则), and everything else in On Liberty is built on it. Mill published this in 1859, pushing back against government censorship — but also against something subtler he feared more: the “tyranny of the majority,” society pressuring everyone to live the same way. The principle draws a circle around each person: your body, your beliefs, your choices. Inside that circle, no one may force you — they may only try to change your mind.",
+        matters: "This one sentence still frames modern debates: seatbelt and helmet laws, drug policy, vaccine mandates, speech rules online. When someone argues “the government shouldn’t protect me from myself,” they are quoting Mill — whether they know it or not.",
+        think: [
+          "Mill says “his own good … is not a sufficient warrant.” Do you agree? Think of one law you know that exists purely to protect people from themselves.",
+          "Who counts as “others”? If my choice hurts my family’s feelings, is that “harm to others” — or still my own business?"
+        ]
+      }
+    },
+    {
+      text: "He cannot rightfully be compelled to do or forbear because it will be better for him to do so, because it will make him happier, because, in the opinions of others, to do so would be wise, or even right. These are good reasons for remonstrating with him, or reasoning with him, or persuading him, or entreating him, but not for compelling him, or visiting him with any evil in case he do otherwise.",
+      unpack: {
+        plain: "You may argue with a person, reason with them, plead with them — all of that respects their freedom. What you may not do is force them, or punish them, for a choice that harms nobody but themselves.",
+        zh: "你可以规劝他、和他讲道理、说服他、恳求他——这些都可以。但只要他的选择只关乎他自己，你就不可以强迫他，也不可以在他不听时惩罚他。",
+        story: "Notice the ladder of verbs Mill climbs: remonstrating → reasoning → persuading → entreating. Each one engages the person’s own judgment — it treats them as an adult who decides for themselves. Then the ladder breaks: compelling, and “visiting him with any evil” (an old phrase meaning punishing him). For Mill, the line between persuasion and coercion is the line between respecting a person and ruling them.",
+        matters: "Persuade as much as you like; coerce never. This distinction is Mill’s answer to every well-meaning authority — parents of adult children, moral majorities, paternalistic governments. And note: punishment doesn’t have to be legal. Shame, exclusion and gossip are also “evils” society visits on people who choose differently.",
+        think: [
+          "Where is this line in your own life? When does a parent’s “persuading” become “compelling”?",
+          "Mill counts social punishment — shame, exclusion — as “evil” too. Does that make his principle harder to live by than it first sounds?"
+        ]
+      }
+    }
+  ];
+
+  var DICT = {
+    "that": { pos: "conj.", en: "Introduces the statement of a principle — like saying “The rule is that…”. Mill is announcing his thesis.", zh: "连词，引出一条原则：“即……”" },
+    "only": { pos: "adj.", en: "The single one; no other exists.", zh: "唯一的" },
+    "purpose": { pos: "n.", ipa: "/ˈpɜːrpəs/", en: "The reason for doing something; the goal that justifies an action.", zh: "目的；理由" },
+    "power": { pos: "n.", ipa: "/ˈpaʊər/", en: "The ability of society or government to control what people do.", zh: "权力" },
+    "rightfully": { pos: "adv.", ipa: "/ˈraɪtfəli/", en: "With moral justification; in a way that is fair and legitimate.", zh: "正当地；合理地" },
+    "exercised": { pos: "v.", ipa: "/ˈeksərsaɪzd/", en: "Used; put into action. “To exercise power” = to use one’s power.", zh: "行使（权力）", trap: "Not 锻炼 (going to the gym)! With power or rights, exercise means to use: 行使权力。", tricky: true },
+    "over": { pos: "prep.", en: "Upon; directed at. Power “over” someone = power that controls them.", zh: "对……（行使权力）" },
+    "member": { pos: "n.", ipa: "/ˈmembər/", en: "A person who belongs to a group.", zh: "成员" },
+    "civilised": { pos: "adj.", ipa: "/ˈsɪvəlaɪzd/", en: "Socially and politically developed. (British spelling of “civilized” — Mill was English.)", zh: "文明的" },
+    "community": { pos: "n.", ipa: "/kəˈmjuːnəti/", en: "A society; a group of people living under shared rules.", zh: "社会；共同体" },
+    "against": { pos: "prep.", en: "In opposition to; contrary to.", zh: "违背；反对" },
+    "will": { pos: "n.", ipa: "/wɪl/", en: "What a person wants; their own choice. “Against his will” = when he does not want it.", zh: "意愿", trap: "Not the future-tense “will” (将要)! Here it is a noun: “against his will” = 违背他的意愿。", tricky: true },
+    "prevent": { pos: "v.", ipa: "/prɪˈvent/", en: "To stop something from happening.", zh: "防止" },
+    "harm": { pos: "n.", ipa: "/hɑːrm/", en: "Damage or injury done to someone. The key word of this whole book — this sentence is called Mill’s “harm principle.”", zh: "伤害（本句即著名的“伤害原则”）" },
+    "others": { pos: "pron.", en: "Other people — everyone except the person himself.", zh: "他人" },
+    "good": { pos: "n.", ipa: "/ɡʊd/", en: "Benefit; well-being. “His own good” = what benefits him.", zh: "利益；好处", trap: "Here good is a noun (利益), not the adjective “good” (好的)：“his own good” = 他自身的利益。", tricky: true },
+    "physical": { pos: "adj.", ipa: "/ˈfɪzɪkəl/", en: "Relating to the body.", zh: "身体的" },
+    "moral": { pos: "adj.", ipa: "/ˈmɔːrəl/", en: "Relating to right and wrong; to a person’s character.", zh: "道德的" },
+    "sufficient": { pos: "adj.", ipa: "/səˈfɪʃənt/", en: "Enough; adequate for the purpose.", zh: "足够的" },
+    "warrant": { pos: "n.", ipa: "/ˈwɔːrənt/", en: "A justification; a good enough reason. “Not a sufficient warrant” = not reason enough.", zh: "正当理由；依据", trap: "Not 逮捕令 (a police warrant)! In philosophy, a warrant is a justification — “not a sufficient warrant” = 不足以构成正当理由。", tricky: true },
+    "compelled": { pos: "v.", ipa: "/kəmˈpeld/", en: "Forced to do something against one’s wishes.", zh: "被迫；被强制" },
+    "forbear": { pos: "v.", ipa: "/fɔːrˈber/", en: "To hold yourself back from doing something. (Formal, old-fashioned — the opposite of “do” here: “to do or forbear” = to act or to refrain.)", zh: "克制不做；抑制" },
+    "better": { pos: "adj.", en: "Comparative of “good” — more beneficial.", zh: "更好" },
+    "happier": { pos: "adj.", ipa: "/ˈhæpiər/", en: "Comparative of “happy” — more happy.", zh: "更快乐" },
+    "opinions": { pos: "n.", ipa: "/əˈpɪnjənz/", en: "What people think or believe; their views.", zh: "看法；意见" },
+    "wise": { pos: "adj.", ipa: "/waɪz/", en: "Showing good judgment; sensible.", zh: "明智的" },
+    "right": { pos: "adj.", en: "Morally correct.", zh: "正确的" },
+    "reasons": { pos: "n.", en: "Justifications; grounds for doing something.", zh: "理由" },
+    "remonstrating": { pos: "v.", ipa: "/rɪˈmɑːnstreɪtɪŋ/", en: "Arguing with someone earnestly to make them change what they are doing. (Formal.) “Remonstrate with him” = protest to him, urge him.", zh: "规劝；诚恳地劝告" },
+    "reasoning": { pos: "v.", ipa: "/ˈriːzənɪŋ/", en: "Using logical argument to convince someone. “Reason with him” = talk sense with him.", zh: "讲道理" },
+    "persuading": { pos: "v.", ipa: "/pərˈsweɪdɪŋ/", en: "Convincing someone to do or believe something.", zh: "说服" },
+    "entreating": { pos: "v.", ipa: "/ɪnˈtriːtɪŋ/", en: "Begging someone earnestly. (Formal, literary.) The gentlest step in Mill’s ladder of verbs.", zh: "恳求" },
+    "compelling": { pos: "v.", ipa: "/kəmˈpelɪŋ/", en: "Forcing someone. The verb compel — where Mill draws the line.", zh: "强迫", trap: "Not the adjective “a compelling story” (引人入胜的)! Here it is the verb compel = force: 强迫。", tricky: true },
+    "visiting": { pos: "v.", ipa: "/ˈvɪzɪtɪŋ/", en: "Inflicting; imposing something bad on someone. “Visiting him with any evil” = punishing him, making something bad happen to him.", zh: "施加（惩罚）", trap: "Not 拜访! This is an old usage: “visit X with evil” = 对X施加惩罚。A perfect example of a familiar word wearing an unfamiliar meaning.", tricky: true },
+    "evil": { pos: "n.", ipa: "/ˈiːvəl/", en: "Something bad done to a person — here: a punishment or penalty, not “evil” as in a villain.", zh: "惩罚；恶果" },
+    "otherwise": { pos: "adv.", ipa: "/ˈʌðərwaɪz/", en: "Differently; in another way. “In case he do otherwise” = if he chooses differently.", zh: "不这样做；否则" },
+    "case": { pos: "n.", en: "“In case he do otherwise” = in the situation where he acts differently. (“He do” is old-fashioned grammar, normal in 1859.)", zh: "情况" },
+    "either": { pos: "conj.", en: "One or the other of two: “either physical or moral.”", zh: "两者之一；或" },
+    "own": { pos: "adj.", en: "Belonging to oneself: “his own good” = his personal benefit.", zh: "自己的" },
+    "cannot": { pos: "v.", en: "Can not; is not permitted to.", zh: "不能" },
+    "because": { pos: "conj.", en: "For the reason that.", zh: "因为" },
+    "these": { pos: "pron.", en: "The things just mentioned — his good, his happiness, others’ opinions.", zh: "这些" },
+    "even": { pos: "adv.", en: "Used to stress something surprising: “or even right” — yes, even then.", zh: "甚至" }
+  };
+
+  var FUNCTION_WORDS = {
+    "the": "定冠词", "a": "不定冠词", "an": "不定冠词", "of": "……的",
+    "for": "为了；对于", "which": "关系代词", "can": "能够", "be": "系动词",
+    "any": "任何", "his": "他的", "is": "是", "to": "动词不定式标记；向",
+    "not": "不", "or": "或", "he": "他", "do": "做", "it": "它", "him": "他",
+    "make": "使", "in": "在……中", "so": "如此", "would": "将会（虚拟）",
+    "are": "是", "with": "和；对", "but": "但是", "will": null
+  };
+
+  /* ---------------- state ---------------- */
+
+  var snapped = false;
+  var savedWords = [];
+  var savedMoments = [
+    { quote: "Visibility is a trap.", book: "Discipline and Punish", ch: "Part 3", when: "last Tuesday" }
+  ];
+  var toastTimer = null;
+
+  /* ---------------- helpers ---------------- */
+
+  function $(id) { return document.getElementById(id); }
+
+  function toast(msg, ms) {
+    var t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove('show'); }, ms || 2200);
+  }
+
+  var SCREENS = ['scr-capture', 'scr-read', 'scr-guide', 'scr-moments', 'scr-words'];
+  function show(id) {
+    SCREENS.forEach(function (s) { $(s).hidden = (s !== id); });
+    $('nav-read').classList.toggle('on', id === 'scr-capture' || id === 'scr-read');
+    $('nav-guide').classList.toggle('on', id === 'scr-guide');
+    $('nav-moments').classList.toggle('on', id === 'scr-moments');
+    $('nav-words').classList.toggle('on', id === 'scr-words');
+    closeSheet();
+  }
+
+  function openSheet(html) {
+    $('sheet-scroll').innerHTML = html;
+    $('sheet').hidden = false;
+    $('backdrop').hidden = false;
+    $('sheet-scroll').scrollTop = 0;
+  }
+  function closeSheet() {
+    $('sheet').hidden = true;
+    $('backdrop').hidden = true;
+    var act = document.querySelector('.w.active');
+    if (act) act.classList.remove('active');
+  }
+
+  function esc(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  /* ---------------- passage rendering ---------------- */
+
+  function renderPassage() {
+    var container = $('passage');
+    var legend = container.querySelector('.legend');
+    PARAGRAPHS.forEach(function (para, pi) {
+      var p = document.createElement('p');
+      p.className = 'para';
+      var sentences = para.text.match(/[^.]+\.?/g) || [para.text];
+      sentences.forEach(function (sentence, si) {
+        var s = sentence.trim();
+        if (si > 0) p.appendChild(document.createTextNode(' '));
+        s.split(' ').forEach(function (token, ti) {
+          var m = token.match(/^([^A-Za-z’']*)([A-Za-z’']+)([^A-Za-z’']*)$/);
+          if (ti > 0) p.appendChild(document.createTextNode(' '));
+          if (!m) { p.appendChild(document.createTextNode(token)); return; }
+          if (m[1]) p.appendChild(document.createTextNode(m[1]));
+          var btn = document.createElement('button');
+          btn.className = 'w';
+          btn.type = 'button';
+          btn.textContent = m[2];
+          var key = m[2].toLowerCase();
+          var entry = DICT[key];
+          if (entry && entry.tricky) btn.className += ' tricky';
+          btn.addEventListener('click', function () { openWord(m[2], key, para.text, btn); });
+          p.appendChild(btn);
+          if (m[3]) p.appendChild(document.createTextNode(m[3]));
+        });
+        var smark = document.createElement('button');
+        smark.className = 'smark';
+        smark.type = 'button';
+        smark.textContent = '✧';
+        smark.setAttribute('aria-label', 'Keep this sentence as a Moment');
+        smark.addEventListener('click', function () { openMoment(s); });
+        p.appendChild(smark);
+      });
+      var pmark = document.createElement('button');
+      pmark.className = 'pmark';
+      pmark.type = 'button';
+      pmark.textContent = '¶';
+      pmark.setAttribute('aria-label', 'Unpack this paragraph');
+      pmark.addEventListener('click', function () { openUnpack(pi); });
+      p.appendChild(pmark);
+      container.insertBefore(p, legend);
+    });
+  }
+
+  /* ---------------- word sheet ---------------- */
+
+  function sentenceWith(word, paraText) {
+    var sentences = paraText.match(/[^.]+\.?/g) || [paraText];
+    var re = new RegExp('\\b' + word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
+    for (var i = 0; i < sentences.length; i++) {
+      if (re.test(sentences[i])) {
+        return esc(sentences[i].trim()).replace(re, function (mm) { return '<mark>' + mm + '</mark>'; });
+      }
+    }
+    return '';
+  }
+
+  function openWord(display, key, paraText, btn) {
+    var entry = DICT[key];
+    var html = '';
+    if (entry) {
+      html += '<div class="hw-line"><span class="hw">' + esc(display.toLowerCase()) + '</span>';
+      if (entry.ipa) html += '<span class="ipa">' + entry.ipa + '</span>';
+      html += '<span class="pos">' + entry.pos + '</span></div>';
+      html += '<p class="sense">' + esc(entry.en) + '<span class="zh">' + esc(entry.zh) + '</span></p>';
+      if (entry.trap) html += '<p class="trap"><b>⚠ Careful —</b> ' + esc(entry.trap) + '</p>';
+      var sent = sentenceWith(display, paraText);
+      if (sent) html += '<p class="in-sentence">' + sent + '</p>';
+      var isSaved = savedWords.some(function (w) { return w.key === key; });
+      html += '<button class="save-btn' + (isSaved ? ' saved' : '') + '" id="save-word">' + (isSaved ? '✓ Saved to My Words' : '＋ Save to My Words') + '</button>';
+    } else if (key in FUNCTION_WORDS && FUNCTION_WORDS[key]) {
+      html += '<div class="hw-line"><span class="hw">' + esc(display.toLowerCase()) + '</span><span class="pos">function word</span></div>';
+      html += '<p class="sense">A small grammar word — nothing tricky here.<span class="zh">' + FUNCTION_WORDS[key] + '</span></p>';
+    } else {
+      html += '<div class="hw-line"><span class="hw">' + esc(display.toLowerCase()) + '</span></div>';
+      html += '<p class="sense">In the full app, Claude explains this word’s meaning in this exact sentence — one sense, plain English, 中文。<span class="zh">（原型中此词未预先写入）</span></p>';
+    }
+    html += '<p class="ai-note">Simulated — in the product this answer is generated live for your sentence.</p>';
+    openSheet(html);
+    if (btn) btn.classList.add('active');
+    var saveBtn = $('save-word');
+    if (saveBtn && entry) {
+      saveBtn.addEventListener('click', function () {
+        var i = savedWords.findIndex(function (w) { return w.key === key; });
+        if (i === -1) {
+          savedWords.push({ key: key, zh: entry.zh, src: 'On Liberty, Ch. I' });
+          saveBtn.classList.add('saved');
+          saveBtn.textContent = '✓ Saved to My Words';
+          toast('Saved — ' + savedWords.length + ' word' + (savedWords.length > 1 ? 's' : '') + ' in My Words');
+        } else {
+          savedWords.splice(i, 1);
+          saveBtn.classList.remove('saved');
+          saveBtn.textContent = '＋ Save to My Words';
+        }
+        renderWords();
+      });
+    }
+  }
+
+  /* ---------------- unpack sheet ---------------- */
+
+  function openUnpack(pi) {
+    var u = PARAGRAPHS[pi].unpack;
+    var html = '<p class="sheet-title">Unpacking paragraph ' + (pi + 1) + ' · On Liberty, Ch. I</p>';
+    html += '<h4 class="unpack-h">In plain English</h4><p class="unpack-p">' + esc(u.plain) + '</p>';
+    html += '<h4 class="unpack-h">中文大意</h4><p class="unpack-p zh">' + esc(u.zh) + '</p>';
+    html += '<h4 class="unpack-h">The story underneath</h4><p class="unpack-p">' + esc(u.story) + '</p>';
+    html += '<h4 class="unpack-h">Why it still matters</h4><p class="unpack-p">' + esc(u.matters) + '</p>';
+    html += '<h4 class="unpack-h">Carry back to the page</h4><ul class="think-list">';
+    u.think.forEach(function (q) { html += '<li>' + esc(q) + '</li>'; });
+    html += '</ul>';
+    html += '<p class="ai-note">Simulated — in the product this is generated live for any paragraph you choose.</p>';
+    openSheet(html);
+  }
+
+  /* ---------------- moments ---------------- */
+
+  function openMoment(sentence) {
+    var already = savedMoments.some(function (m) { return m.quote === sentence; });
+    var html = '<p class="sheet-title">A sentence worth keeping · 悟</p>';
+    html += '<div class="moment-preview">“' + esc(sentence) + '”<span class="q-src">On Liberty · Chapter I · today</span></div>';
+    html += '<button class="save-btn' + (already ? ' saved' : '') + '" id="keep-moment">' + (already ? '✧ Kept in Moments' : '✧ Keep this Moment') + '</button>';
+    html += '<p class="ai-note">Kept exactly as printed — with its book, chapter, and the day it found you.</p>';
+    openSheet(html);
+    var btn = $('keep-moment');
+    btn.addEventListener('click', function () {
+      if (savedMoments.some(function (m) { return m.quote === sentence; })) return;
+      savedMoments.unshift({ quote: sentence, book: 'On Liberty', ch: 'Chapter I', when: 'today' });
+      btn.classList.add('saved');
+      btn.textContent = '✧ Kept in Moments';
+      renderMoments();
+      toast('Kept — the sentences that make your days, in one place');
+    });
+  }
+
+  function renderMoments() {
+    var body = $('moments-body');
+    if (savedMoments.length === 0) {
+      body.innerHTML = '<div class="empty-words"><span class="big">悟</span>When a sentence lights you up, tap the small ✧ after it. Your enlightening moments collect here — kept with their book and their day.</div>';
+      return;
+    }
+    var html = '';
+    savedMoments.forEach(function (m) {
+      html += '<div class="moment-card"><blockquote>' + esc(m.quote) + '</blockquote>'
+        + '<div class="m-src"><b>' + esc(m.book) + '</b>· ' + esc(m.ch) + '<span class="when">' + esc(m.when) + '</span></div></div>';
+    });
+    body.innerHTML = html;
+  }
+
+  /* ---------------- words screen ---------------- */
+
+  function renderWords() {
+    var body = $('words-body');
+    var badge = $('words-badge');
+    if (savedWords.length === 0) {
+      body.innerHTML = '<div class="empty-words"><span class="big">词</span>Words you tap while reading are collected here — with the meaning they had <i>in your book</i>, ready to review later.</div>';
+      badge.style.display = 'none';
+      return;
+    }
+    badge.style.display = 'inline-block';
+    badge.textContent = savedWords.length;
+    var html = '';
+    savedWords.forEach(function (w) {
+      html += '<div class="word-row"><span class="hw">' + esc(w.key) + '</span><span class="zh">' + esc(w.zh) + '</span><span class="src">' + esc(w.src) + '</span></div>';
+    });
+    html += '<button class="review-btn" id="review-btn">Review ' + savedWords.length + ' word' + (savedWords.length > 1 ? 's' : '') + '</button>';
+    body.innerHTML = html;
+    $('review-btn').addEventListener('click', function () {
+      toast('Flashcard review ships in v2 — your words are waiting');
+    });
+  }
+
+  /* ---------------- wiring ---------------- */
+
+  renderPassage();
+  renderMoments();
+
+  $('shutter').addEventListener('click', function () {
+    var vf = $('viewfinder');
+    if (vf.classList.contains('scanning')) return;
+    vf.classList.add('scanning');
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    setTimeout(function () {
+      vf.classList.remove('scanning');
+      snapped = true;
+      show('scr-read');
+      toast('✓ Recognized: On Liberty, Chapter I');
+    }, reduced ? 150 : 1450);
+  });
+
+  $('paste-link').addEventListener('click', function () {
+    toast('Paste & dictate ship in v1 — try the shutter for now');
+  });
+
+  $('resnap').addEventListener('click', function () { show('scr-capture'); });
+  $('nav-read').addEventListener('click', function () { show(snapped ? 'scr-read' : 'scr-capture'); });
+  $('nav-guide').addEventListener('click', function () { show('scr-guide'); });
+  $('nav-moments').addEventListener('click', function () { show('scr-moments'); });
+  $('nav-words').addEventListener('click', function () { show('scr-words'); });
+
+  $('backdrop').addEventListener('click', closeSheet);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeSheet();
+  });
+})();
+</script>
