@@ -143,7 +143,7 @@
 
   <section class="screen on" id="scr-capture">
     <div class="capture-body">
-      <div class="seal big-seal" aria-hidden="true">批注</div>
+      <div class="seal big-seal" aria-hidden="true">M</div>
       <h1>Marginalia</h1>
       <p>Point your camera at the page you're reading. Tap what confuses you. Keep what lights you up.</p>
       <div id="snap-box">
@@ -171,19 +171,19 @@
   </section>
 
   <section class="screen" id="scr-moments">
-    <div class="top"><div class="t">Moments<small>the sentences that made your days · 悟</small></div></div>
+    <div class="top"><div class="t">Moments<small>the sentences that made your days</small></div></div>
     <div class="coll-body" id="moments-body"></div>
   </section>
 
   <section class="screen" id="scr-words">
-    <div class="top"><div class="t">My Words<small>collected while you read · 词</small></div></div>
+    <div class="top"><div class="t">My Words<small>collected while you read</small></div></div>
     <div class="coll-body" id="words-body"></div>
   </section>
 
   <nav class="nav" aria-label="Sections">
     <button id="nav-read" class="on"><span class="glyph">¶</span>Read</button>
-    <button id="nav-moments"><span class="glyph">悟</span>Moments</button>
-    <button id="nav-words"><span class="glyph">词</span>Words</button>
+    <button id="nav-moments"><span class="glyph">✧</span>Moments</button>
+    <button id="nav-words"><span class="glyph">✎</span>Words</button>
   </nav>
 
   <div class="backdrop" id="backdrop" hidden></div>
@@ -538,7 +538,7 @@
 
   function openMoment(sentence) {
     var exists = state.moments.some(function (m) { return m.quote === sentence; });
-    var html = '<p class="sheet-title">A sentence worth keeping · 悟</p>';
+    var html = '<p class="sheet-title">A sentence worth keeping</p>';
     html += '<div class="moment-preview">“' + esc(sentence) + '”<span class="q-src">' + esc(bookLabel()) + ' · ' + today() + '</span></div>';
     html += '<button class="save-btn' + (exists ? ' saved' : '') + '" id="keep-moment">' + (exists ? '✧ Kept in Moments' : '✧ Keep this Moment') + '</button>';
     openSheet(html);
@@ -556,7 +556,7 @@
   function renderMoments() {
     var body = $('moments-body');
     if (state.moments.length === 0) {
-      body.innerHTML = '<div class="empty"><span class="big">悟</span>When a sentence lights you up, tap the small ✧ after it. Your enlightening moments collect here — kept with their book and their day.</div>';
+      body.innerHTML = '<div class="empty"><span class="big">✧</span>When a sentence lights you up, tap the small ✧ after it. Your enlightening moments collect here — kept with their book and their day.</div>';
       return;
     }
     var html = '';
@@ -569,7 +569,7 @@
   function renderWords() {
     var body = $('words-body');
     if (state.words.length === 0) {
-      body.innerHTML = '<div class="empty"><span class="big">词</span>Words you tap while reading are collected here — with the meaning they had <i>in your book</i>, ready to review later.</div>';
+      body.innerHTML = '<div class="empty"><span class="big">✎</span>Words you tap while reading are collected here — with the meaning they had <i>in your book</i>, ready to review later.</div>';
       return;
     }
     var html = '';
