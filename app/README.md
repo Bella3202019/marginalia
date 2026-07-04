@@ -84,6 +84,18 @@ That's it. The app detects the config and turns on the sign-in screen; remove
 the env vars and it goes back to open mode. Sessions persist on each device —
 you tap the emailed link once and stay signed in.
 
+4. *(optional)* **Polish the sign-in email** — Supabase's default magic-link
+   email is plain text with no branding. [`email-templates/magic-link.html`](email-templates/magic-link.html)
+   is a branded version matching the app's look; paste it into Supabase →
+   Authentication → Email Templates → Magic Link (replace the Message body),
+   with subject `Your sign-in link for Marginalia · 批注`.
+5. *(optional)* **Send from your own domain** — Supabase's built-in mailer has
+   a low hourly send limit. To send from `you@yourdomain.com` instead, verify
+   your domain with an email provider (e.g. [Resend](https://resend.com/domains))
+   and set it as Custom SMTP in Supabase → Authentication → Settings → SMTP
+   Settings (host `smtp.resend.com`, port `465`, username `resend`, password =
+   your Resend API key).
+
 ## Notes on DeepSeek
 
 - **DeepSeek's API is text-only** — its V4 "vision" is web-chat only, not exposed
