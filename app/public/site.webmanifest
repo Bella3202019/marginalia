@@ -1,0 +1,11 @@
+{
+  "name": "Marginalia",
+  "short_name": "Marginalia",
+  "icons": [
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ],
+  "theme_color": "#BF3B2B",
+  "background_color": "#F3F0E7",
+  "display": "standalone",
+  "start_url": "/"
+}
