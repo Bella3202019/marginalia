@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#F3F0E7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#14161C" media="(prefers-color-scheme: dark)">
 <title>Marginalia · 批注</title>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <style>
   :root {
     --bg: #F3F0E7; --surface: #FBF9F2; --sunken: #ECE8DB;
@@ -228,12 +229,20 @@
     this.value = '';
     if (!file) return;
     var note = $('scan-note');
-    note.innerHTML = '<span class="spin"></span>Reading your page…';
     try {
-      var b64 = await downscale(file, 1600, 0.8);
-      var page = await api('/api/read-page', { image_base64: b64, media_type: 'image/jpeg' });
+      // DeepSeek's API is text-only, so we OCR the photo here in the browser
+      // and send the recognized text (not the image) to the reading companion.
+      note.innerHTML = '<span class="spin"></span>Reading the text on your page…';
+      var canvas = await toCanvas(file, 1600);
+      var text = await ocr(canvas, note);
+      if (!text || text.replace(/\s/g, '').length < 12) {
+        note.textContent = "Couldn't read text from that photo — try again, closer, flatter, and with more light.";
+        return;
+      }
+      note.innerHTML = '<span class="spin"></span>Understanding the page…';
+      var page = await api('/api/read-page', { text: text });
       if (!page.recognized || !page.paragraphs || page.paragraphs.length === 0) {
-        note.textContent = "Couldn't read that photo — try again, closer and with more light.";
+        note.textContent = "Couldn't make sense of that page — try a clearer photo.";
         return;
       }
       note.textContent = '';
@@ -247,7 +256,8 @@
     }
   });
 
-  function downscale(file, maxEdge, quality) {
+  // draw the photo to a downscaled, lightly-binarized grayscale canvas — easier for OCR
+  function toCanvas(file, maxEdge) {
     return new Promise(function (resolve, reject) {
       var img = new Image();
       var url = URL.createObjectURL(file);
@@ -256,13 +266,35 @@
         var canvas = document.createElement('canvas');
         canvas.width = Math.round(img.width * scale);
         canvas.height = Math.round(img.height * scale);
-        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        try {
+          var d = ctx.getImageData(0, 0, canvas.width, canvas.height), px = d.data;
+          for (var i = 0; i < px.length; i += 4) {
+            var g = 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2];
+            g = g < 105 ? 0 : (g > 155 ? 255 : g);
+            px[i] = px[i + 1] = px[i + 2] = g;
+          }
+          ctx.putImageData(d, 0, 0);
+        } catch (e) { /* tainted canvas etc. — OCR the color version */ }
         URL.revokeObjectURL(url);
-        resolve(canvas.toDataURL('image/jpeg', quality).split(',')[1]);
+        resolve(canvas);
       };
       img.onerror = function () { URL.revokeObjectURL(url); reject(new Error('could not read image')); };
       img.src = url;
     });
+  }
+
+  async function ocr(canvas, note) {
+    if (typeof Tesseract === 'undefined') throw new Error('the text reader failed to load — check your connection and retry');
+    var res = await Tesseract.recognize(canvas, 'eng', {
+      logger: function (m) {
+        if (m.status === 'recognizing text') {
+          note.innerHTML = '<span class="spin"></span>Reading the text on your page… ' + Math.round(m.progress * 100) + '%';
+        }
+      },
+    });
+    return (res && res.data && res.data.text) || '';
   }
 
   function bookLabel() {

@@ -62,29 +62,27 @@ async function ask(messages, max_tokens) {
 
 /* ---------------- public API ---------------- */
 
-export async function readPage({ image_base64, media_type }) {
+// The page photo is OCR'd in the browser (Tesseract.js) — DeepSeek's API is
+// text-only, so we send it the recognized text, not the image, and let it clean
+// up the OCR, recognize the book, flag tricky words, and build the guide.
+export async function readPage({ text }) {
   if (MOCK) return mock.readPage();
-  if (!image_base64) return { error: "no image" };
+  if (!text || !text.trim()) return { error: "no text — the photo didn't read into anything" };
   try {
     return await ask([
       { role: "system", content: SYSTEM },
-      {
-        role: "user",
-        content: [
-          { type: "text", text:
-            'This is a photo of a page of a physical book. Return one JSON object with this shape:\n' +
-            '{"recognized": boolean, "book_title": string|null, "author": string|null, "chapter": string|null, ' +
-            '"paragraphs": string[], "tricky_words": string[], ' +
-            '"guide": {"takeaways": string[], "carry_question": string} | null}\n\n' +
-            'Transcribe the body text exactly as printed, split into paragraphs (a paragraph cut off at the ' +
-            'page edge still counts). Identify book, author, and chapter if you recognize them from the text. ' +
-            'tricky_words = lowercase words on this page likely to trick a native-Mandarin reader — especially ' +
-            'common words used in an uncommon sense. If you recognized the book, fill guide with 2-3 takeaways ' +
-            'for the whole book and one question to carry while reading; otherwise guide = null. ' +
-            'If this is not a readable book page, set recognized=false and paragraphs=[].' },
-          { type: "image_url", image_url: { url: `data:${media_type || "image/jpeg"};base64,${image_base64}` } },
-        ],
-      },
+      { role: "user", content:
+        'Below is raw OCR text captured from a photo of a page of a physical book. It may contain OCR errors, ' +
+        'broken line-wraps, and stray characters. Return one JSON object with this shape:\n' +
+        '{"recognized": boolean, "book_title": string|null, "author": string|null, "chapter": string|null, ' +
+        '"paragraphs": string[], "tricky_words": string[], "guide": {"takeaways": string[], "carry_question": string} | null}\n\n' +
+        'Clean the text into properly joined paragraphs — fix obvious OCR errors and de-hyphenate words split ' +
+        'across line breaks — but do NOT invent or add sentences that are not in the OCR text. Identify the book, ' +
+        'author, and chapter if you recognize them from the text. tricky_words = lowercase words present in the ' +
+        'text likely to trick a native-Mandarin reader (common words used in an uncommon sense). If you recognize ' +
+        'the book, fill guide with 2-3 takeaways for the whole book and one question to carry while reading; ' +
+        'otherwise guide = null. If the OCR text is too garbled or clearly not from a book, set recognized=false ' +
+        'and paragraphs=[].\n\nOCR text:\n' + text },
     ], 16000);
   } catch (err) { return { error: friendly(err) }; }
 }

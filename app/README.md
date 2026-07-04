@@ -36,11 +36,11 @@ Wi-Fi, use `http://<your-computer-ip>:3000`.
 ## How it works
 
 ```
-phone camera photo ──► /api/read-page ──► DeepSeek V4 (vision, JSON mode)
-                                          • transcribes the page into paragraphs
-                                          • recognizes book / author / chapter
-                                          • flags tricky words (朱批 radar)
-                                          • adds a per-book mini guide
+phone camera photo ──► Tesseract.js OCR ──► /api/read-page ──► DeepSeek V4 (text, JSON)
+   (in the browser)      raw page text                         • cleans OCR into paragraphs
+                                                               • recognizes book / author / chapter
+                                                               • flags tricky words (朱批 radar)
+                                                               • adds a per-book mini guide
 
 tap a word         ──► /api/word      ──► one in-context sense, EN + 中文,
                                           trap warning (cached per sentence)
@@ -61,6 +61,13 @@ tap ✧              ──► saved locally   ──► Moments (悟) — your 
 
 ## Notes on DeepSeek
 
+- **DeepSeek's API is text-only** — its V4 "vision" is web-chat only, not exposed
+  through the API. So the page photo is OCR'd in the browser with Tesseract.js
+  (loaded from a CDN), and only the recognized *text* is sent to DeepSeek. If you
+  later switch to a vision-capable provider, `readPage` in `app/lib/reader.js` is
+  the one place to send the image instead of the OCR text.
+- OCR quality depends on the photo: flat page, good light, filling the frame.
+  DeepSeek then cleans up OCR errors and joins wrapped lines into paragraphs.
 - DeepSeek doesn't enforce a JSON schema, so the prompts describe the exact JSON
   shape and the client parses defensively (`extractJson` in `reader.js`).
 - The page-snap is the expensive call (one vision request per page). Word taps
