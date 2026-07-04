@@ -295,7 +295,12 @@
       if (r.error) throw r.error;
       note.textContent = '✉ Check your inbox — tap the link and you’re in.';
     } catch (err) {
-      note.textContent = 'Couldn’t send the link: ' + (err.message || err);
+      console.error('sign-in link error:', err);
+      var detail = err && (err.message || err.error_description || err.msg || err.error);
+      if (!detail) { try { detail = JSON.stringify(err); } catch (e) { detail = String(err); } }
+      if (!detail || detail === '{}') detail = 'the sign-in service gave no details (see browser console for the raw error)';
+      var status = err && err.status ? ' [HTTP ' + err.status + ']' : '';
+      note.textContent = 'Couldn’t send the link: ' + detail + status;
     }
     this.disabled = false;
   });
